@@ -1,0 +1,208 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  
+  cloud:
+    consul:
+      host: localhost
+      port: 8500
+      discovery:
+        enabled: true
+        register: true
+        deregister: true
+        prefer-ip-address: true
+        health-check-path: /actuator/health
+        health-check-interval: 10s
+        health-check-timeout: 3s
+        health-check-critical-timeout: 30s
+        instance-id: ${spring.application.name}:${server.port}
+        service-name: ${spring.application.name}
+        tags:
+          - microservice
+          - api-gateway
+          - version-1.0
+    
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      routes:
+        # User Management Service
+        - id: user-management
+          uri: lb://user-management-service
+          predicates:
+            - Path=/api/users/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: user-management-cb
+                fallbackUri: forward:/fallback/user-management
+        
+        # Database Sync Service A (PostgreSQL)
+        - id: sync-service-a
+          uri: lb://database-sync-service-a
+          predicates:
+            - Path=/api/sync-a/**
+          filters:
+            - StripPrefix=2
+            - name: CircuitBreaker
+              args:
+                name: sync-a-cb
+                fallbackUri: forward:/fallback/sync-a
+        
+        # Database Sync Service B (MySQL)
+        - id: sync-service-b
+          uri: lb://database-sync-service-b
+          predicates:
+            - Path=/api/sync-b/**
+          filters:
+            - StripPrefix=2
+            - name: CircuitBreaker
+              args:
+                name: sync-b-cb
+                fallbackUri: forward:/fallback/sync-b
+        
+        # Database Sync Service C (MongoDB)
+        - id: sync-service-c
+          uri: lb://database-sync-service-c
+          predicates:
+            - Path=/api/sync-c/**
+          filters:
+            - StripPrefix=2
+            - name: CircuitBreaker
+              args:
+                name: sync-c-cb
+                fallbackUri: forward:/fallback/sync-c
+        
+        # Health checks routing
+        - id: health-user-management
+          uri: http://localhost:8081
+          predicates:
+            - Path=/health/user-management/**
+          filters:
+            - StripPrefix=2
+            - RewritePath=/health/user-management/(?<segment>.*), /actuator/$\{segment}
+        
+        - id: health-sync-a
+          uri: http://localhost:8082
+          predicates:
+            - Path=/health/sync-a/**
+          filters:
+            - StripPrefix=2
+            - RewritePath=/health/sync-a/(?<segment>.*), /actuator/$\{segment}
+        
+        - id: health-sync-b
+          uri: http://localhost:8083
+          predicates:
+            - Path=/health/sync-b/**
+          filters:
+            - StripPrefix=2
+            - RewritePath=/health/sync-b/(?<segment>.*), /actuator/$\{segment}
+        
+        - id: health-sync-c
+          uri: http://localhost:8084
+          predicates:
+            - Path=/health/sync-c/**
+          filters:
+            - StripPrefix=2
+            - RewritePath=/health/sync-c/(?<segment>.*), /actuator/$\{segment}
+
+      # Global CORS configuration
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders: "*"
+            allowCredentials: false
+
+# Circuit Breaker Configuration
+resilience4j:
+  circuitbreaker:
+    instances:
+      user-management-cb:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 5s
+        failureRateThreshold: 50
+        eventConsumerBufferSize: 10
+      
+      sync-a-cb:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 5s
+        failureRateThreshold: 50
+        eventConsumerBufferSize: 10
+      
+      sync-b-cb:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 5s
+        failureRateThreshold: 50
+        eventConsumerBufferSize: 10
+      
+      sync-c-cb:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 5s
+        failureRateThreshold: 50
+        eventConsumerBufferSize: 10
+
+# Logging Configuration
+logging:
+  level:
+    org.springframework.cloud.gateway: INFO
+    org.springframework.web: INFO
+    com.medihelp360.gateway: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# Management and Monitoring
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,gateway
+  endpoint:
+    health:
+      show-details: always
+    gateway:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+  info:
+    env:
+      enabled: true
+
+# Application Info
+info:
+  app:
+    name: MediHelp360 API Gateway
+    description: Punto de entrada único para todos los microservicios
+    version: 1.0.0
+    contact:
+      name: MediHelp360 Team
+      email: support@medihelp360.com 

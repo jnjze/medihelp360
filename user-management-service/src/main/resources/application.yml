@@ -1,0 +1,138 @@
+spring:
+  application:
+    name: user-management-service
+  
+  cloud:
+    consul:
+      host: localhost
+      port: 8500
+      discovery:
+        enabled: true
+        register: true
+        deregister: true
+        prefer-ip-address: true
+        health-check-path: /api/actuator/health
+        health-check-interval: 10s
+        health-check-timeout: 3s
+        health-check-critical-timeout: 30s
+        instance-id: ${spring.application.name}:${server.port}
+        service-name: ${spring.application.name}
+        tags:
+          - microservice
+          - user-management
+          - version-1.0
+  
+  datasource:
+    url: jdbc:postgresql://localhost:5432/users_db
+    username: users_user
+    password: users_pass
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 20000
+      idle-timeout: 300000
+      leak-detection-threshold: 60000
+  
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+  
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      retries: 3
+      properties:
+        enable.idempotence: true
+        max.in.flight.requests.per.connection: 5
+    consumer:
+      group-id: user-management-service
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      auto-offset-reset: earliest
+      properties:
+        spring.json.trusted.packages: "com.medihelp360.user.event"
+
+  security:
+    user:
+      name: admin
+      password: admin
+      roles: ADMIN
+
+server:
+  port: 8081
+  servlet:
+    context-path: /api
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,loggers
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      sla:
+        http.server.requests: 100ms,200ms,500ms,1s,2s
+
+logging:
+  level:
+    com.medihelp360.user: DEBUG
+    org.springframework.kafka: INFO
+    org.springframework.security: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# Circuit Breaker Configuration
+resilience4j:
+  circuitbreaker:
+    instances:
+      user-service:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 5s
+        failureRateThreshold: 50
+        eventConsumerBufferSize: 10
+  retry:
+    instances:
+      user-service:
+        maxAttempts: 3
+        waitDuration: 1000ms
+
+# Security Configuration for API Gateway Only Access
+security:
+  gateway:
+    # Solo permitir requests desde el API Gateway
+    allowed-origins:
+      - "http://localhost:8080"
+    # Header personalizado que debe enviar el API Gateway
+    required-header:
+      name: "X-Gateway-Request"
+      value: "medihelp360-gateway"
+  
+  # Configuración para desarrollo (bloquear acceso directo por defecto)
+  development:
+    allow-direct-access: false  # Por defecto NO permitir acceso directo 

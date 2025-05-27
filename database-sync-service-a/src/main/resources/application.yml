@@ -1,0 +1,113 @@
+spring:
+  application:
+    name: database-sync-service-a
+  
+  cloud:
+    consul:
+      host: localhost
+      port: 8500
+      discovery:
+        enabled: true
+        register: true
+        deregister: true
+        prefer-ip-address: true
+        health-check-path: /api/actuator/health
+        health-check-interval: 10s
+        health-check-timeout: 3s
+        health-check-critical-timeout: 30s
+        instance-id: ${spring.application.name}:${server.port}
+        service-name: ${spring.application.name}
+        tags:
+          - microservice
+          - database-sync
+          - postgresql
+          - version-1.0
+  
+  datasource:
+    url: jdbc:postgresql://localhost:5433/sync_db_a
+    username: sync_user_a
+    password: sync_pass_a
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 20000
+      idle-timeout: 300000
+      leak-detection-threshold: 60000
+  
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+  
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: database-sync-service-a
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+      properties:
+        spring.json.trusted.packages: "*"
+    listener:
+      ack-mode: manual_immediate
+
+server:
+  port: 8082
+  servlet:
+    context-path: /api
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,loggers
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      sla:
+        http.server.requests: 100ms,200ms,500ms,1s,2s
+
+logging:
+  level:
+    com.medihelp360.sync: DEBUG
+    org.springframework.kafka: INFO
+    org.springframework.retry: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# Retry Configuration
+spring.retry:
+  enabled: true
+
+# Security Configuration for API Gateway Only Access
+security:
+  gateway:
+    # Solo permitir requests desde el API Gateway
+    allowed-origins:
+      - "http://localhost:8080"
+    # Header personalizado que debe enviar el API Gateway
+    required-header:
+      name: "X-Gateway-Request"
+      value: "medihelp360-gateway"
+  
+  # Configuración para desarrollo (bloquear acceso directo por defecto)
+  development:
+    allow-direct-access: false  # Por defecto NO permitir acceso directo 

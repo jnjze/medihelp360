@@ -1,0 +1,180 @@
+version: '3.8'
+
+services:
+  # API Gateway - Único punto de entrada público
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    ports:
+      - "8080:8080"  # Solo el API Gateway está expuesto públicamente
+    environment:
+      - CONSUL_HOST=consul
+      - USER_MANAGEMENT_SERVICE_URL=lb://user-management-service
+    networks:
+      - public-network
+      - internal-network
+    depends_on:
+      - consul
+      - user-management-service
+
+  # User Management Service - Solo accesible internamente
+  user-management-service:
+    build: ./user-management-service
+    container_name: user-management-service
+    # NO hay ports expuestos públicamente
+    environment:
+      - CONSUL_HOST=consul
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-users:5432/users_db
+    networks:
+      - internal-network  # Solo red interna
+    depends_on:
+      - postgres-users
+      - consul
+
+  # Database Sync Services - Solo accesibles internamente
+  database-sync-service-a:
+    build: ./database-sync-service-a
+    container_name: database-sync-service-a
+    environment:
+      - CONSUL_HOST=consul
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-sync-a:5432/sync_db_a
+    networks:
+      - internal-network
+    depends_on:
+      - postgres-sync-a
+      - consul
+
+  database-sync-service-b:
+    build: ./database-sync-service-b
+    container_name: database-sync-service-b
+    environment:
+      - CONSUL_HOST=consul
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-sync-b:3306/sync_db_b
+    networks:
+      - internal-network
+    depends_on:
+      - mysql-sync-b
+      - consul
+
+  database-sync-service-c:
+    build: ./database-sync-service-c
+    container_name: database-sync-service-c
+    environment:
+      - CONSUL_HOST=consul
+      - SPRING_DATA_MONGODB_URI=mongodb://mongo-sync-c:27017/sync_db_c
+    networks:
+      - internal-network
+    depends_on:
+      - mongo-sync-c
+      - consul
+
+  # Consul - Accesible desde ambas redes
+  consul:
+    image: consul:1.15.3
+    container_name: consul-server
+    ports:
+      - "8500:8500"  # UI de Consul accesible para administración
+    command: >
+      consul agent
+      -server
+      -bootstrap-expect=1
+      -ui
+      -node=consul-server
+      -client=0.0.0.0
+      -data-dir=/consul/data
+    volumes:
+      - consul_data:/consul/data
+    networks:
+      - public-network
+      - internal-network
+
+  # Bases de datos - Solo red interna
+  postgres-users:
+    image: postgres:15-alpine
+    container_name: postgres-users
+    environment:
+      POSTGRES_DB: users_db
+      POSTGRES_USER: users_user
+      POSTGRES_PASSWORD: users_pass
+    volumes:
+      - postgres_users_data:/var/lib/postgresql/data
+    networks:
+      - internal-network
+
+  postgres-sync-a:
+    image: postgres:15-alpine
+    container_name: postgres-sync-a
+    environment:
+      POSTGRES_DB: sync_db_a
+      POSTGRES_USER: sync_user_a
+      POSTGRES_PASSWORD: sync_pass_a
+    volumes:
+      - postgres_sync_a_data:/var/lib/postgresql/data
+    networks:
+      - internal-network
+
+  mysql-sync-b:
+    image: mysql:8.0
+    container_name: mysql-sync-b
+    environment:
+      MYSQL_DATABASE: sync_db_b
+      MYSQL_USER: sync_user_b
+      MYSQL_PASSWORD: sync_pass_b
+      MYSQL_ROOT_PASSWORD: root_password
+    volumes:
+      - mysql_sync_b_data:/var/lib/mysql
+    networks:
+      - internal-network
+
+  mongo-sync-c:
+    image: mongo:7.0
+    container_name: mongo-sync-c
+    environment:
+      MONGO_INITDB_DATABASE: sync_db_c
+      MONGO_INITDB_ROOT_USERNAME: sync_user_c
+      MONGO_INITDB_ROOT_PASSWORD: sync_pass_c
+    volumes:
+      - mongo_sync_c_data:/data/db
+    networks:
+      - internal-network
+
+  # Kafka para eventos
+  kafka:
+    image: confluentinc/cp-kafka:7.4.0
+    container_name: kafka
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - internal-network
+    depends_on:
+      - zookeeper
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.0
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - internal-network
+
+volumes:
+  consul_data:
+  postgres_users_data:
+  postgres_sync_a_data:
+  mysql_sync_b_data:
+  mongo_sync_c_data:
+
+networks:
+  # Red pública - Solo API Gateway y Consul UI
+  public-network:
+    driver: bridge
+  
+  # Red interna - Todos los servicios pueden comunicarse entre sí
+  internal-network:
+    driver: bridge
+    internal: true  # Esta red no tiene acceso a internet 

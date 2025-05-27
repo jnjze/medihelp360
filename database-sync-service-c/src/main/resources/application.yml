@@ -1,0 +1,42 @@
+spring:
+  profiles:
+    active: dev
+  application:
+    name: database-sync-service-c
+  
+  cloud:
+    consul:
+      host: localhost
+      port: 8500
+      discovery:
+        enabled: true
+        register: true
+        deregister: true
+        prefer-ip-address: true
+        health-check-path: /actuator/health
+        health-check-interval: 10s
+        health-check-timeout: 3s
+        health-check-critical-timeout: 30s
+        instance-id: ${spring.application.name}:${server.port}
+        service-name: ${spring.application.name}
+        tags:
+          - microservice
+          - database-sync
+          - mongodb
+          - version-1.0
+  
+  data: 
+
+# Security Configuration for API Gateway Only Access
+security:
+  gateway:
+    # Solo permitir requests desde el API Gateway
+    allowed-origins:
+      - "http://localhost:8080"
+    # Header personalizado que debe enviar el API Gateway
+    required-header:
+      name: "X-Gateway-Request"
+      value: "medihelp360-gateway"
+  
+  # Configuración para desarrollo (bloquear acceso directo por defecto)
+  development:

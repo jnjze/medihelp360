@@ -1,0 +1,328 @@
+# MediHelp360 - Healthcare Microservices .gitignore
+
+# ===================================
+# Java & Maven
+# ===================================
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+hs_err_pid*
+replay_pid*
+
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# ===================================
+# Spring Boot
+# ===================================
+*.log
+*.log.*
+logs/
+spring.log
+application-*.properties
+application-*.yml
+!application.yml
+!application.properties
+
+# Spring Boot DevTools
+.reloadtrigger
+
+# ===================================
+# IDE Files
+# ===================================
+
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+.idea_modules/
+
+# Eclipse
+.metadata
+bin/
+tmp/
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
+.settings/
+.loadpath
+.recommenders
+.project
+.classpath
+.factorypath
+.buildpath
+.target
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# ===================================
+# Operating System
+# ===================================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# ===================================
+# Docker & Containers
+# ===================================
+.dockerignore
+docker-compose.override.yml
+.env
+.env.local
+.env.*.local
+
+# ===================================
+# Database Files
+# ===================================
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+*.db-wal
+*.db-shm
+
+# H2 Database
+*.h2.db
+*.trace.db
+*.lock.db
+
+# ===================================
+# Security & Secrets
+# ===================================
+*.key
+*.pem
+*.p12
+*.jks
+*.keystore
+*.truststore
+secrets/
+.secrets
+vault/
+.vault
+credentials.json
+service-account.json
+
+# Environment variables
+.env.production
+.env.staging
+.env.development
+
+# ===================================
+# Logs & Monitoring
+# ===================================
+*.log
+*.log.*
+logs/
+log/
+*.out
+nohup.out
+
+# Application logs
+application.log
+application-*.log
+spring.log
+spring-*.log
+error.log
+access.log
+
+# Monitoring & Metrics
+metrics/
+traces/
+*.hprof
+*.dump
+
+# ===================================
+# Temporary & Cache Files
+# ===================================
+*.tmp
+*.temp
+*.cache
+.cache/
+temp/
+tmp/
+
+# Backup files
+*.backup
+*.bak
+*.orig
+*~
+
+# ===================================
+# Build & Distribution
+# ===================================
+build/
+dist/
+out/
+target/
+.gradle/
+gradle-app.setting
+!gradle-wrapper.jar
+!gradle-wrapper.properties
+
+# ===================================
+# Testing
+# ===================================
+test-output/
+test-results/
+coverage/
+.nyc_output/
+*.lcov
+jacoco.exec
+*.exec
+
+# ===================================
+# Configuration Backups
+# ===================================
+*.backup.*
+application.yml.backup.*
+application.properties.backup.*
+
+# ===================================
+# Consul & Service Discovery
+# ===================================
+consul_data/
+consul/data/
+.consul/
+
+# ===================================
+# Kafka & Message Brokers
+# ===================================
+kafka-logs/
+zookeeper/
+kafka_data/
+
+# ===================================
+# Custom Project Files
+# ===================================
+
+# Script backups
+*.sh.backup.*
+
+# Response files from testing scripts
+/tmp/direct_response.json
+/tmp/gateway_response.json
+/tmp/header_response.json
+
+# Local development overrides
+docker-compose.local.yml
+application-local.yml
+application-local.properties
+
+# Documentation builds
+docs/build/
+site/
+
+# ===================================
+# Package Managers
+# ===================================
+
+# Node.js (if using frontend)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# ===================================
+# Miscellaneous
+# ===================================
+*.pid
+*.seed
+*.pid.lock
+.npm
+.eslintcache
+.nyc_output
+.grunt
+bower_components
+.lock-wscript
+.coverage
+.nyc_output
+.cache
+.parcel-cache
+.next
+.nuxt
+dist
+.cache/
+.vuepress/dist
+.serverless/
+.fusebox/
+.dynamodb/
+.tern-port
+
+# ===================================
+# Health Check & Status Files
+# ===================================
+health.check
+status.json
+.health
+
+# ===================================
+# Local Development
+# ===================================
+local/
+dev/
+development/
+.local/ 

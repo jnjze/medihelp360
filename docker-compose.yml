@@ -1,0 +1,197 @@
+version: '3.8'
+
+services:
+  # Zookeeper para Kafka
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.0
+    hostname: zookeeper
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - microservices-network
+
+  # Kafka
+  kafka:
+    image: confluentinc/cp-kafka:7.4.0
+    hostname: kafka
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+      - "9101:9101"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_JMX_PORT: 9101
+      KAFKA_JMX_HOSTNAME: localhost
+    networks:
+      - microservices-network
+
+  # PostgreSQL para User Management Service
+  postgres-users:
+    image: postgres:15-alpine
+    container_name: postgres-users
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: users_db
+      POSTGRES_USER: users_user
+      POSTGRES_PASSWORD: users_pass
+    volumes:
+      - postgres_users_data:/var/lib/postgresql/data
+    networks:
+      - microservices-network
+
+  # PostgreSQL para Database Sync Service A
+  postgres-sync-a:
+    image: postgres:15-alpine
+    container_name: postgres-sync-a
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: sync_db_a
+      POSTGRES_USER: sync_user_a
+      POSTGRES_PASSWORD: sync_pass_a
+    volumes:
+      - postgres_sync_a_data:/var/lib/postgresql/data
+    networks:
+      - microservices-network
+
+  # MySQL para Database Sync Service B
+  mysql-sync-b:
+    image: mysql:8.0
+    container_name: mysql-sync-b
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: sync_db_b
+      MYSQL_USER: sync_user_b
+      MYSQL_PASSWORD: sync_pass_b
+      MYSQL_ROOT_PASSWORD: root_password
+    volumes:
+      - mysql_sync_b_data:/var/lib/mysql
+    networks:
+      - microservices-network
+
+  # MongoDB para Database Sync Service C
+  mongo-sync-c:
+    image: mongo:7.0
+    container_name: mongo-sync-c
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: sync_db_c
+      MONGO_INITDB_ROOT_USERNAME: sync_user_c
+      MONGO_INITDB_ROOT_PASSWORD: sync_pass_c
+    volumes:
+      - mongo_sync_c_data:/data/db
+    networks:
+      - microservices-network
+
+  # Kafka UI para administración
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    depends_on:
+      - kafka
+    ports:
+      - "8090:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
+      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+    networks:
+      - microservices-network
+
+  # Prometheus para métricas
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    networks:
+      - microservices-network
+
+  # Grafana para visualización
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - microservices-network
+
+  # Jaeger para tracing distribuido
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: jaeger
+    ports:
+      - "16686:16686"
+      - "14268:14268"
+    environment:
+      COLLECTOR_OTLP_ENABLED: true
+    networks:
+      - microservices-network
+
+  # Consul para Service Discovery
+  consul:
+    image: consul:1.15
+    container_name: consul
+    ports:
+      - "8500:8500"
+      - "8600:8600/udp"
+    command: >
+      consul agent -dev -ui -client=0.0.0.0 
+      -datacenter=dc1 
+      -node=consul-server
+      -log-level=INFO
+    environment:
+      CONSUL_BIND_INTERFACE: eth0
+    volumes:
+      - consul_data:/consul/data
+    networks:
+      - microservices-network
+    healthcheck:
+      test: ["CMD", "consul", "members"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  postgres_users_data:
+  postgres_sync_a_data:
+  mysql_sync_b_data:
+  mongo_sync_c_data:
+  prometheus_data:
+  grafana_data:
+  consul_data:
+
+networks:
+  microservices-network:
+    driver: bridge 
