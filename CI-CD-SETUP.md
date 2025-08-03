@@ -64,7 +64,7 @@ Este documento describe la configuración de un sistema CI/CD completo con Jenki
 ```json
 {
   "insecure-registries": [
-    "localhost:5000",
+    "localhost:5001",
     "127.0.0.1:5000"
   ]
 }
@@ -79,7 +79,7 @@ Este documento describe la configuración de un sistema CI/CD completo con Jenki
 
 Esto iniciará:
 - ✅ Jenkins en http://localhost:8090
-- ✅ Docker Registry en http://localhost:5000
+- ✅ Docker Registry en http://localhost:5001
 - ✅ Registry UI en http://localhost:8091
 
 ### Paso 3: Configurar Jenkins
@@ -119,7 +119,7 @@ En tu repositorio GitHub:
 
 ```bash
 # En Jenkins → Manage Jenkins → System Configuration
-DOCKER_REGISTRY=localhost:5000
+DOCKER_REGISTRY=localhost:5001
 COMPOSE_PROJECT_NAME=medihelp360
 SLACK_WEBHOOK_URL=https://hooks.slack.com/... (opcional)
 ```

@@ -160,33 +160,33 @@ deploy_application() {
     ENV_TAG="$ENVIRONMENT-latest"
     
     echo "📦 Building API Gateway..."
-    cd api-gateway && docker build -t localhost:5000/medihelp360-api-gateway:$BUILD_TAG . && docker build -t localhost:5000/medihelp360-api-gateway:$ENV_TAG . && cd ..
+    cd api-gateway && docker build -t localhost:5001/medihelp360-api-gateway:$BUILD_TAG . && docker build -t localhost:5001/medihelp360-api-gateway:$ENV_TAG . && cd ..
     
     echo "📦 Building User Management Service..."
-    cd user-management-service && docker build -t localhost:5000/medihelp360-user-management-service:$BUILD_TAG . && docker build -t localhost:5000/medihelp360-user-management-service:$ENV_TAG . && cd ..
+    cd user-management-service && docker build -t localhost:5001/medihelp360-user-management-service:$BUILD_TAG . && docker build -t localhost:5001/medihelp360-user-management-service:$ENV_TAG . && cd ..
     
     echo "📦 Building Database Sync Service A..."
-    cd database-sync-service-a && docker build -t localhost:5000/medihelp360-database-sync-service-a:$BUILD_TAG . && docker build -t localhost:5000/medihelp360-database-sync-service-a:$ENV_TAG . && cd ..
+    cd database-sync-service-a && docker build -t localhost:5001/medihelp360-database-sync-service-a:$BUILD_TAG . && docker build -t localhost:5001/medihelp360-database-sync-service-a:$ENV_TAG . && cd ..
     
     echo "📦 Building Database Sync Service B..."
-    cd database-sync-service-b && docker build -t localhost:5000/medihelp360-database-sync-service-b:$BUILD_TAG . && docker build -t localhost:5000/medihelp360-database-sync-service-b:$ENV_TAG . && cd ..
+    cd database-sync-service-b && docker build -t localhost:5001/medihelp360-database-sync-service-b:$BUILD_TAG . && docker build -t localhost:5001/medihelp360-database-sync-service-b:$ENV_TAG . && cd ..
     
     echo "📦 Building Database Sync Service C..."
-    cd database-sync-service-c && docker build -t localhost:5000/medihelp360-database-sync-service-c:$BUILD_TAG . && docker build -t localhost:5000/medihelp360-database-sync-service-c:$ENV_TAG . && cd ..
+    cd database-sync-service-c && docker build -t localhost:5001/medihelp360-database-sync-service-c:$BUILD_TAG . && docker build -t localhost:5001/medihelp360-database-sync-service-c:$ENV_TAG . && cd ..
     
     # Push al registry local si está disponible
-    if curl -f http://localhost:5000/v2/ >/dev/null 2>&1; then
+    if curl -f http://localhost:5001/v2/ >/dev/null 2>&1; then
         echo "📤 Pushing images to local registry..."
-        docker push localhost:5000/medihelp360-api-gateway:$BUILD_TAG
-        docker push localhost:5000/medihelp360-api-gateway:$ENV_TAG
-        docker push localhost:5000/medihelp360-user-management-service:$BUILD_TAG
-        docker push localhost:5000/medihelp360-user-management-service:$ENV_TAG
-        docker push localhost:5000/medihelp360-database-sync-service-a:$BUILD_TAG
-        docker push localhost:5000/medihelp360-database-sync-service-a:$ENV_TAG
-        docker push localhost:5000/medihelp360-database-sync-service-b:$BUILD_TAG
-        docker push localhost:5000/medihelp360-database-sync-service-b:$ENV_TAG
-        docker push localhost:5000/medihelp360-database-sync-service-c:$BUILD_TAG
-        docker push localhost:5000/medihelp360-database-sync-service-c:$ENV_TAG
+        docker push localhost:5001/medihelp360-api-gateway:$BUILD_TAG
+        docker push localhost:5001/medihelp360-api-gateway:$ENV_TAG
+        docker push localhost:5001/medihelp360-user-management-service:$BUILD_TAG
+        docker push localhost:5001/medihelp360-user-management-service:$ENV_TAG
+        docker push localhost:5001/medihelp360-database-sync-service-a:$BUILD_TAG
+        docker push localhost:5001/medihelp360-database-sync-service-a:$ENV_TAG
+        docker push localhost:5001/medihelp360-database-sync-service-b:$BUILD_TAG
+        docker push localhost:5001/medihelp360-database-sync-service-b:$ENV_TAG
+        docker push localhost:5001/medihelp360-database-sync-service-c:$BUILD_TAG
+        docker push localhost:5001/medihelp360-database-sync-service-c:$ENV_TAG
     else
         echo "⚠️  Registry no disponible - usando imágenes locales"
     fi

@@ -20,7 +20,7 @@ echo "🎉 Jenkins is ready!"
 echo "=================================================="
 echo "📍 Jenkins URL: http://localhost:8090"
 echo "🔑 Initial Admin Password: $JENKINS_PASSWORD"
-echo "📦 Docker Registry: http://localhost:5000"
+echo "📦 Docker Registry: http://localhost:5001"
 echo "🎨 Registry UI: http://localhost:8091"
 echo "=================================================="
 
@@ -105,7 +105,7 @@ echo "✅ Jenkins configuration created at jenkins-config/medihelp360-pipeline.x
 
 # Test Docker Registry
 echo "🧪 Testing Docker Registry..."
-if curl -f http://localhost:5000/v2/ 2>/dev/null; then
+if curl -f http://localhost:5001/v2/ 2>/dev/null; then
     echo "✅ Docker Registry is working"
 else
     echo "❌ Docker Registry is not responding"
@@ -118,13 +118,13 @@ echo "1. Configure your Git repository URL in Jenkins"
 echo "2. Set up webhook in your Git repository:"
 echo "   Webhook URL: http://your-server:8090/github-webhook/"
 echo "3. Add Docker Registry as insecure registry in Docker daemon:"
-echo "   Add 'localhost:5000' to insecure-registries in Docker settings"
+echo "   Add 'localhost:5001' to insecure-registries in Docker settings"
 echo "4. Test the pipeline with a commit"
 echo ""
 
 echo "🔧 To configure Docker for insecure registry, add this to /etc/docker/daemon.json:"
 echo '{'
-echo '  "insecure-registries": ["localhost:5000"]'
+echo '  "insecure-registries": ["localhost:5001"]'
 echo '}'
 echo ""
 

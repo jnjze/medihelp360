@@ -11,7 +11,7 @@ pipeline {
     }
     
     environment {
-        DOCKER_REGISTRY = 'localhost:5000'  // Registry local
+        DOCKER_REGISTRY = 'localhost:5001'  // Registry local
         COMPOSE_PROJECT_NAME = 'medihelp360'
         GIT_COMMIT_SHORT = sh(
             script: "git rev-parse --short HEAD",

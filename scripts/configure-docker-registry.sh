@@ -27,7 +27,7 @@ case $OS in
     "buildkit": true
   },
   "insecure-registries": [
-    "localhost:5000",
+    "localhost:5001",
     "127.0.0.1:5000"
   ]
 }'
@@ -57,12 +57,12 @@ case $OS in
             # Use jq to merge configurations if available
             if command -v jq >/dev/null 2>&1; then
                 echo "🔧 Merging with existing configuration using jq..."
-                sudo jq '. + {"insecure-registries": ["localhost:5000", "127.0.0.1:5000"]}' "$DOCKER_CONFIG_DIR/daemon.json" > /tmp/daemon.json.new
+                sudo jq '. + {"insecure-registries": ["localhost:5001", "127.0.0.1:5000"]}' "$DOCKER_CONFIG_DIR/daemon.json" > /tmp/daemon.json.new
                 sudo mv /tmp/daemon.json.new "$DOCKER_CONFIG_DIR/daemon.json"
             else
                 echo "⚠️  jq not found. Please manually add insecure-registries to $DOCKER_CONFIG_DIR/daemon.json"
                 echo "Add this to your daemon.json:"
-                echo '  "insecure-registries": ["localhost:5000", "127.0.0.1:5000"]'
+                echo '  "insecure-registries": ["localhost:5001", "127.0.0.1:5000"]'
             fi
         else
             # Create new daemon.json
@@ -70,7 +70,7 @@ case $OS in
             sudo tee "$DOCKER_CONFIG_DIR/daemon.json" > /dev/null << 'EOF'
 {
   "insecure-registries": [
-    "localhost:5000",
+    "localhost:5001",
     "127.0.0.1:5000"
   ],
   "features": {
@@ -107,7 +107,7 @@ EOF
         echo "❓ Unsupported OS: $OS"
         echo "Please manually configure Docker daemon.json with:"
         echo '{
-  "insecure-registries": ["localhost:5000", "127.0.0.1:5000"]
+  "insecure-registries": ["localhost:5001", "127.0.0.1:5000"]
 }'
         exit 1
         ;;
@@ -115,8 +115,8 @@ esac
 
 # Test registry connectivity
 echo "🧪 Testing registry connectivity..."
-if curl -f http://localhost:5000/v2/ >/dev/null 2>&1; then
-    echo "✅ Registry is accessible at http://localhost:5000"
+if curl -f http://localhost:5001/v2/ >/dev/null 2>&1; then
+    echo "✅ Registry is accessible at http://localhost:5001"
 else
     echo "⚠️  Registry is not running. Start it with:"
     echo "   docker-compose -f docker-compose.jenkins.yml up -d registry"
@@ -128,14 +128,14 @@ echo "Pulling hello-world image..."
 docker pull hello-world:latest
 
 echo "Tagging for local registry..."
-docker tag hello-world:latest localhost:5000/hello-world:test
+docker tag hello-world:latest localhost:5001/hello-world:test
 
 echo "Pushing to local registry..."
-if docker push localhost:5000/hello-world:test; then
+if docker push localhost:5001/hello-world:test; then
     echo "✅ Successfully pushed to local registry!"
     
     # Clean up test image
-    docker rmi localhost:5000/hello-world:test || true
+    docker rmi localhost:5001/hello-world:test || true
     
     echo "🧹 Cleaned up test images"
 else
@@ -146,9 +146,9 @@ fi
 
 echo ""
 echo "🎉 Docker registry configuration completed!"
-echo "✅ Your Docker daemon is now configured to work with localhost:5000"
+echo "✅ Your Docker daemon is now configured to work with localhost:5001"
 echo ""
 echo "💡 You can now:"
 echo "1. Start Jenkins: ./scripts/setup-jenkins.sh"
-echo "2. Push images to localhost:5000/image-name:tag"
+echo "2. Push images to localhost:5001/image-name:tag"
 echo "3. View registry contents at http://localhost:8091" 

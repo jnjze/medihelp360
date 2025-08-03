@@ -8,7 +8,7 @@ echo "================================="
 # Configuración
 ENVIRONMENT=${1:-production}
 BUILD_TAG=${BUILD_TAG:-latest}
-DOCKER_REGISTRY=${DOCKER_REGISTRY:-localhost:5000}
+DOCKER_REGISTRY=${DOCKER_REGISTRY:-localhost:5001}
 
 # Configuración específica por ambiente
 case $ENVIRONMENT in
@@ -275,7 +275,7 @@ show_help() {
     echo ""
     echo "Variables de ambiente:"
     echo "  BUILD_TAG       - Tag de la imagen a desplegar (default: latest)"
-    echo "  DOCKER_REGISTRY - Registry de Docker (default: localhost:5000)"
+    echo "  DOCKER_REGISTRY - Registry de Docker (default: localhost:5001)"
     echo ""
     echo "Ejemplos:"
     echo "  $0 production                    # Deploy a producción"
