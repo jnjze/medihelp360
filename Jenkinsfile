@@ -3,7 +3,7 @@ pipeline {
 
   environment {
     DOCKER_REGISTRY = 'docker.io/jnjze'  // cámbialo si usas otro registry
-    BRANCH_NAME = "${env.BRANCH_NAME ?: 'development'}"
+    BRANCH_NAME = "${env.BRANCH_NAME ?: 'main'}"
   }
 
   stages {
