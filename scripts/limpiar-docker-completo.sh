@@ -217,7 +217,7 @@ version: '3.8'
 
 services:
   jenkins:
-    image: jenkins/jenkins:2.426.2-lts
+            image: jenkins/jenkins:lts
     container_name: jenkins-medihelp360
     restart: unless-stopped
     ports:

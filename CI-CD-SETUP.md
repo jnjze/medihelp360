@@ -1,14 +1,34 @@
 # 🚀 MediHelp360 CI/CD Setup Guide
 
-## 📋 Resumen
+## ⚡ Resumen Rápido
 
-Este documento describe la configuración de un sistema CI/CD completo con Jenkins para el proyecto MediHelp360. El sistema incluye:
+1. **Configurar Docker Registry:**
+   ```bash
+   ./scripts/configure-docker-registry.sh
+   ```
 
-- **Jenkins** para automatización CI/CD
-- **Docker Registry local** para almacenar imágenes
-- **Pipeline automatizado** que se ejecuta en cada commit
-- **Deployment automático** al servidor de producción
-- **Health checks** y validaciones
+2. **Iniciar Jenkins:**
+   ```bash
+   ./scripts/setup-jenkins.sh
+   ```
+
+3. **Acceder Jenkins:** `http://localhost:8090`
+   - Usar password mostrado en consola
+   - Instalar plugins sugeridos + Docker Pipeline
+   - Crear job "MediHelp360-Pipeline" usando XML generado
+
+4. **Deploy manual inicial:**
+   ```bash
+   ./scripts/manual-deploy.sh main
+   ```
+
+## 🐳 Imágenes Docker Utilizadas
+
+- **Jenkins:** `jenkins/jenkins:lts` (versión LTS más reciente)
+- **Jenkins Agent:** `jenkins/ssh-agent:latest`
+- **Docker Registry:** `registry:2`
+- **Registry UI:** `joxit/docker-registry-ui:latest`
+- **SonarQube:** `sonarqube:10.3-community` (opcional)
 
 ## 🏗️ Arquitectura CI/CD
 

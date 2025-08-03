@@ -116,6 +116,7 @@ fi
 
 # Crear Jenkins sin docker-compose
 print_info "Creando Jenkins manualmente..."
+print_info "Descargando Jenkins LTS más reciente (esto puede tomar unos minutos)..."
 
 docker run -d \
     --name jenkins-medihelp360 \
@@ -130,10 +131,11 @@ docker run -d \
     -e JENKINS_OPTS="--httpPort=8080" \
     --user root \
     --network jenkins-net \
-    jenkins/jenkins:2.426.2-lts
+    jenkins/jenkins:lts
 
 if [ $? -eq 0 ]; then
     print_success "Jenkins creado exitosamente"
+    print_info "Se ha descargado e iniciado la versión LTS más reciente de Jenkins"
 else
     print_error "Error al crear Jenkins"
     exit 1

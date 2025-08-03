@@ -3,7 +3,7 @@ version: '3.8'
 services:
   # Jenkins CI/CD Server
   jenkins:
-    image: jenkins/jenkins:2.426.2-lts
+    image: jenkins/jenkins:lts
     container_name: jenkins-medihelp360
     restart: unless-stopped
     ports:
@@ -64,7 +64,7 @@ services:
 
   # Jenkins Agent (for parallel builds)
   jenkins-agent:
-    image: jenkins/ssh-agent:5.12.0
+    image: jenkins/ssh-agent:latest
     container_name: jenkins-agent-medihelp360
     restart: unless-stopped
     ports:
