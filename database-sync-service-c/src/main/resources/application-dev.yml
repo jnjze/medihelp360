@@ -1,0 +1,67 @@
+server:
+  port: 8084
+
+spring:
+  application:
+    name: database-sync-service-c
+  
+  data:
+    mongodb:
+      uri: mongodb://sync_user_c:sync_pass_c@localhost:27017/medihelp360_sync?authSource=admin
+      database: medihelp360_sync
+      auto-index-creation: true
+  
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: database-sync-service-c
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+        spring.json.type.mapping: "UserCreatedEvent:com.example.sync.event.UserEvent,UserUpdatedEvent:com.example.sync.event.UserEvent,UserDeletedEvent:com.example.sync.event.UserEvent"
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      retries: 3
+      properties:
+        enable.idempotence: true
+    
+    topic:
+      user-events: user-events
+
+logging:
+  level:
+    com.example.sync: DEBUG
+    org.springframework.kafka: INFO
+    org.springframework.data.mongodb: INFO
+    org.mongodb.driver: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/database-sync-service-c.log
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+# Configuración personalizada para el servicio
+sync:
+  batch-size: 100
+  retry-attempts: 3
+  retry-delay: 5000
+  enable-metrics: true
+  enable-health-checks: true 

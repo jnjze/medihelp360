@@ -1,0 +1,155 @@
+version: '3.8'
+
+services:
+  # Jenkins CI/CD Server
+  jenkins:
+    image: jenkins/jenkins:2.426.2-lts
+    container_name: jenkins-medihelp360
+    restart: unless-stopped
+    ports:
+      - "8090:8080"  # Jenkins UI
+      - "50000:50000"  # Jenkins agent port
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./scripts:/scripts:ro
+      - ./:/workspace:ro
+    environment:
+      - JENKINS_OPTS=--httpPort=8080
+      - JAVA_OPTS=-Djenkins.install.runSetupWizard=false -Xmx2g -Xms1g
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    networks:
+      - jenkins-network
+    user: root  # Needed for Docker socket access
+    
+  # Local Docker Registry
+  registry:
+    image: registry:2.8
+    container_name: docker-registry-medihelp360
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    volumes:
+      - registry_data:/var/lib/registry
+      - ./registry/config.yml:/etc/docker/registry/config.yml:ro
+    environment:
+      - REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY=/var/lib/registry
+      - REGISTRY_HTTP_ADDR=0.0.0.0:5000
+    networks:
+      - jenkins-network
+      
+  # Registry UI (optional, for easier management)
+  registry-ui:
+    image: joxit/docker-registry-ui:2.5.7
+    container_name: registry-ui-medihelp360
+    restart: unless-stopped
+    ports:
+      - "8091:80"
+    environment:
+      - SINGLE_REGISTRY=true
+      - REGISTRY_TITLE=MediHelp360 Docker Registry
+      - DELETE_IMAGES=true
+      - SHOW_CONTENT_DIGEST=true
+      - NGINX_PROXY_PASS_URL=http://registry:5000
+      - SHOW_CATALOG_NB_TAGS=true
+      - CATALOG_MIN_BRANCHES=1
+      - CATALOG_MAX_BRANCHES=1
+      - TAGLIST_PAGE_SIZE=100
+      - REGISTRY_SECURED=false
+      - CATALOG_ELEMENTS_LIMIT=1000
+    depends_on:
+      - registry
+    networks:
+      - jenkins-network
+
+  # Jenkins Agent (for parallel builds)
+  jenkins-agent:
+    image: jenkins/ssh-agent:5.12.0
+    container_name: jenkins-agent-medihelp360
+    restart: unless-stopped
+    ports:
+      - "22:22"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - agent_workspace:/home/jenkins
+    environment:
+      - JENKINS_AGENT_SSH_PUBKEY=ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC... # Add your SSH public key here
+    networks:
+      - jenkins-network
+    depends_on:
+      - jenkins
+
+  # SonarQube for code quality (optional)
+  sonarqube:
+    image: sonarqube:10.3-community
+    container_name: sonarqube-medihelp360
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+    environment:
+      - SONAR_JDBC_URL=jdbc:postgresql://postgres-sonar:5432/sonarqube
+      - SONAR_JDBC_USERNAME=sonarqube
+      - SONAR_JDBC_PASSWORD=sonarqube_password
+      - SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_logs:/opt/sonarqube/logs
+      - sonarqube_extensions:/opt/sonarqube/extensions
+    networks:
+      - jenkins-network
+    depends_on:
+      - postgres-sonar
+
+  # PostgreSQL for SonarQube
+  postgres-sonar:
+    image: postgres:15-alpine
+    container_name: postgres-sonar
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=sonarqube
+      - POSTGRES_PASSWORD=sonarqube_password
+      - POSTGRES_DB=sonarqube
+    volumes:
+      - postgres_sonar_data:/var/lib/postgresql/data
+    networks:
+      - jenkins-network
+
+  # Nginx reverse proxy (optional, for SSL termination)
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: nginx-proxy-medihelp360
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    networks:
+      - jenkins-network
+    depends_on:
+      - jenkins
+      - registry-ui
+
+volumes:
+  jenkins_home:
+    driver: local
+  registry_data:
+    driver: local
+  agent_workspace:
+    driver: local
+  sonarqube_data:
+    driver: local
+  sonarqube_logs:
+    driver: local
+  sonarqube_extensions:
+    driver: local
+  postgres_sonar_data:
+    driver: local
+
+networks:
+  jenkins-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16 

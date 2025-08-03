@@ -76,12 +76,13 @@ services:
       - "8500:8500"  # UI de Consul accesible para administración
     command: >
       consul agent
+      -dev
       -server
-      -bootstrap-expect=1
       -ui
       -node=consul-server
       -client=0.0.0.0
       -data-dir=/consul/data
+      -log-level=INFO
     volumes:
       - consul_data:/consul/data
     networks:

@@ -1,0 +1,101 @@
+spring:
+  application:
+    name: api-gateway
+  
+  cloud:
+    consul:
+      host: ${CONSUL_HOST:consul}
+      port: ${CONSUL_PORT:8500}
+      discovery:
+        enabled: true
+        register: true
+        deregister: true
+        prefer-ip-address: true
+        health-check-path: /actuator/health
+        health-check-interval: 10s
+        health-check-timeout: 3s
+        health-check-critical-timeout: 30s
+        instance-id: ${spring.application.name}:${server.port}
+        service-name: ${spring.application.name}
+        tags:
+          - microservice
+          - api-gateway
+          - version-1.0
+    
+    gateway:
+      routes:
+        # User Management Service
+        - id: user-management-service
+          uri: lb://user-management-service
+          predicates:
+            - Path=/api/users/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: user-management-cb
+                fallbackUri: forward:/fallback/user-management
+        
+        # Database Sync Service A (PostgreSQL)
+        - id: database-sync-service-a
+          uri: lb://database-sync-service-a
+          predicates:
+            - Path=/api/sync/a/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: sync-service-a-cb
+                fallbackUri: forward:/fallback/sync-service-a
+        
+        # Database Sync Service B (MySQL)
+        - id: database-sync-service-b
+          uri: lb://database-sync-service-b
+          predicates:
+            - Path=/api/sync/b/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: sync-service-b-cb
+                fallbackUri: forward:/fallback/sync-service-b
+        
+        # Database Sync Service C (MongoDB)
+        - id: database-sync-service-c
+          uri: lb://database-sync-service-c
+          predicates:
+            - Path=/api/sync/c/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: sync-service-c-cb
+                fallbackUri: forward:/fallback/sync-service-c
+        
+        # Health check routes
+        - id: user-management-health
+          uri: lb://user-management-service
+          predicates:
+            - Path=/api/actuator/health/user-management
+          filters:
+            - RewritePath=/api/actuator/health/user-management, /api/actuator/health
+
+server:
+  port: ${SERVER_PORT:8080}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,circuitbreakers
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+logging:
+  level:
+    org.springframework.cloud.gateway: INFO
+    org.springframework.cloud.consul: INFO
+    org.springframework.cloud.loadbalancer: INFO
+    org.springframework.web.reactive: INFO
+    reactor.netty.http.client: INFO 
