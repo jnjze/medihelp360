@@ -13,24 +13,7 @@ pipeline {
     environment {
         DOCKER_REGISTRY = 'localhost:5001'  // Registry local
         COMPOSE_PROJECT_NAME = 'medihelp360'
-        GIT_COMMIT_SHORT = sh(
-            script: "git rev-parse --short HEAD",
-            returnStdout: true
-        ).trim()
-        BUILD_NUMBER_TAG = "${BUILD_NUMBER}-${GIT_COMMIT_SHORT}"
-        
-        // Determinar environment basado en branch
-        ENVIRONMENT = sh(
-            script: '''
-                case "${GIT_BRANCH##*/}" in
-                    main) echo "production" ;;
-                    preprod) echo "preprod" ;;
-                    develop) echo "development" ;;
-                    *) echo "feature" ;;
-                esac
-            ''',
-            returnStdout: true
-        ).trim()
+        BUILD_NUMBER_TAG = "${BUILD_NUMBER}"
     }
     
     stages {
@@ -40,6 +23,27 @@ pipeline {
                 checkout scm
                 
                 script {
+                    // Definir variables después del checkout
+                    env.GIT_COMMIT_SHORT = sh(
+                        script: "git rev-parse --short HEAD",
+                        returnStdout: true
+                    ).trim()
+                    
+                    env.BUILD_NUMBER_TAG = "${BUILD_NUMBER}-${env.GIT_COMMIT_SHORT}"
+                    
+                    // Determinar environment basado en branch
+                    env.ENVIRONMENT = sh(
+                        script: '''
+                            case "${GIT_BRANCH##*/}" in
+                                main) echo "production" ;;
+                                preprod) echo "preprod" ;;
+                                develop) echo "development" ;;
+                                *) echo "feature" ;;
+                            esac
+                        ''',
+                        returnStdout: true
+                    ).trim()
+                    
                     echo "🌿 Branch: ${env.GIT_BRANCH}"
                     echo "🏗️  Environment: ${env.ENVIRONMENT}"
                     echo "🏷️  Build Tag: ${env.BUILD_NUMBER_TAG}"
@@ -48,11 +52,11 @@ pipeline {
                 // Notificar inicio del build (opcional)
                 script {
                     if (env.SLACK_WEBHOOK_URL) {
-                        sh '''
-                            curl -X POST -H 'Content-type: application/json' \
-                            --data "{\\"text\\":\\"🔄 Build iniciado\\nBranch: ${GIT_BRANCH##*/}\\nEnvironment: ${ENVIRONMENT}\\nCommit: ${GIT_COMMIT_SHORT}\\"}" \
-                            ${SLACK_WEBHOOK_URL} || true
-                        '''
+                        slackSend(
+                            channel: '#ci-cd',
+                            color: 'good',
+                            message: "🚀 Starting build for ${env.JOB_NAME} - Branch: ${env.GIT_BRANCH} - Environment: ${env.ENVIRONMENT}"
+                        )
                     }
                 }
             }
@@ -346,49 +350,67 @@ pipeline {
     
     post {
         always {
-            echo 'Cleaning up...'
-            sh '''
-                # Clean up old images to save space
-                docker system prune -f
-                docker image prune -f
-            '''
+            script {
+                echo 'Cleaning up...'
+                try {
+                    sh '''
+                        # Clean up old images to save space
+                        docker system prune -f
+                        docker image prune -f
+                    '''
+                } catch (Exception e) {
+                    echo "Warning: Cleanup failed: ${e.getMessage()}"
+                }
+            }
         }
         success {
             script {
-                echo "✅ Pipeline completed successfully for ${env.ENVIRONMENT}!"
+                echo "✅ Pipeline completed successfully for ${env.ENVIRONMENT ?: 'unknown'}!"
                 
                 if (env.SLACK_WEBHOOK_URL) {
-                    sh '''
-                        curl -X POST -H 'Content-type: application/json' \
-                        --data "{\\"text\\":\\"✅ MediHelp360 deployado exitosamente!\\nBranch: ${GIT_BRANCH##*/}\\nEnvironment: ${ENVIRONMENT}\\nBuild: ${BUILD_NUMBER_TAG}\\nCommit: ${GIT_COMMIT_SHORT}\\"}" \
-                        ${SLACK_WEBHOOK_URL} || true
-                    '''
+                    try {
+                        sh '''
+                            curl -X POST -H 'Content-type: application/json' \
+                            --data "{\\"text\\":\\"✅ MediHelp360 deployado exitosamente!\\nBranch: ${GIT_BRANCH##*/}\\nEnvironment: ${ENVIRONMENT}\\nBuild: ${BUILD_NUMBER_TAG}\\nCommit: ${GIT_COMMIT_SHORT}\\"}" \
+                            ${SLACK_WEBHOOK_URL} || true
+                        '''
+                    } catch (Exception e) {
+                        echo "Warning: Slack notification failed: ${e.getMessage()}"
+                    }
                 }
             }
         }
         failure {
             script {
-                echo "❌ Pipeline failed for ${env.ENVIRONMENT}!"
+                echo "❌ Pipeline failed for ${env.ENVIRONMENT ?: 'unknown'}!"
                 
                 if (env.SLACK_WEBHOOK_URL) {
-                    sh '''
-                        curl -X POST -H 'Content-type: application/json' \
-                        --data "{\\"text\\":\\"❌ Build falló para MediHelp360\\nBranch: ${GIT_BRANCH##*/}\\nEnvironment: ${ENVIRONMENT}\\nBuild: ${BUILD_NUMBER_TAG}\\nError: Pipeline failed\\"}" \
-                        ${SLACK_WEBHOOK_URL} || true
-                    '''
+                    try {
+                        sh '''
+                            curl -X POST -H 'Content-type: application/json' \
+                            --data "{\\"text\\":\\"❌ Build falló para MediHelp360\\nBranch: ${GIT_BRANCH##*/}\\nEnvironment: ${ENVIRONMENT}\\nBuild: ${BUILD_NUMBER_TAG}\\nError: Pipeline failed\\"}" \
+                            ${SLACK_WEBHOOK_URL} || true
+                        '''
+                    } catch (Exception e) {
+                        echo "Warning: Slack notification failed: ${e.getMessage()}"
+                    }
                 }
             }
         }
         unstable {
             script {
-                echo "⚠️ Pipeline completed with warnings for ${env.ENVIRONMENT}"
+                echo "⚠️ Pipeline completed with warnings for ${env.ENVIRONMENT ?: 'unknown'}"
                 
                 if (env.SLACK_WEBHOOK_URL) {
-                    sh '''
-                        curl -X POST -H 'Content-type: application/json' \
-                        --data "{\\"text\\":\\"⚠️ Build inestable para MediHelp360\\nBranch: ${GIT_BRANCH##*/}\\nEnvironment: ${ENVIRONMENT}\\nBuild: ${BUILD_NUMBER_TAG}\\nWarning: Tests failed or warnings\\"}" \
-                        ${SLACK_WEBHOOK_URL} || true
-                    '''
+                    try {
+                        sh '''
+                            curl -X POST -H 'Content-type: application/json' \
+                            --data "{\\"text\\":\\"⚠️ Build inestable para MediHelp360\\nBranch: ${GIT_BRANCH##*/}\\nEnvironment: ${ENVIRONMENT}\\nBuild: ${BUILD_NUMBER_TAG}\\nWarning: Tests failed or warnings\\"}" \
+                            ${SLACK_WEBHOOK_URL} || true
+                        '''
+                    } catch (Exception e) {
+                        echo "Warning: Slack notification failed: ${e.getMessage()}"
+                    }
                 }
             }
         }
