@@ -76,6 +76,24 @@ pipeline {
                         }
                     }
                 }
+                stage('Build Frontend') {
+                    steps {
+                        script {
+                            echo 'Building Frontend React App...'
+                            sh '''
+                                cd frontend-app
+                                docker build -t ${DOCKER_REGISTRY}/medihelp360-frontend-service:${BUILD_NUMBER_TAG} \
+                                    --build-arg REACT_APP_ENVIRONMENT=${ENVIRONMENT} \
+                                    --build-arg REACT_APP_API_BASE_URL=http://api-gateway:8080 \
+                                    --build-arg REACT_APP_VERSION=${BUILD_NUMBER_TAG} .
+                                docker build -t ${DOCKER_REGISTRY}/medihelp360-frontend-service:${ENVIRONMENT}-latest \
+                                    --build-arg REACT_APP_ENVIRONMENT=${ENVIRONMENT} \
+                                    --build-arg REACT_APP_API_BASE_URL=http://api-gateway:8080 \
+                                    --build-arg REACT_APP_VERSION=${BUILD_NUMBER_TAG} .
+                            '''
+                        }
+                    }
+                }
                 stage('Build User Management') {
                     steps {
                         script {
@@ -211,6 +229,9 @@ pipeline {
                         # Push images with build number and environment tags
                         docker push ${DOCKER_REGISTRY}/medihelp360-api-gateway:${BUILD_NUMBER_TAG}
                         docker push ${DOCKER_REGISTRY}/medihelp360-api-gateway:${ENVIRONMENT}-latest
+                        
+                        docker push ${DOCKER_REGISTRY}/medihelp360-frontend-service:${BUILD_NUMBER_TAG}
+                        docker push ${DOCKER_REGISTRY}/medihelp360-frontend-service:${ENVIRONMENT}-latest
                         
                         docker push ${DOCKER_REGISTRY}/medihelp360-user-management-service:${BUILD_NUMBER_TAG}
                         docker push ${DOCKER_REGISTRY}/medihelp360-user-management-service:${ENVIRONMENT}-latest

@@ -31,11 +31,24 @@ spring:
           enabled: true
           lower-case-service-id: true
       routes:
+        # Frontend React App (debe ir PRIMERO para capturar rutas raíz)
+        - id: frontend-app
+          uri: lb://frontend-service
+          predicates:
+            - Path=/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: frontend-cb
+                fallbackUri: forward:/fallback/frontend
+          # Orden de precedencia más alto
+          order: 1000
+
         # User Management Service
         - id: user-management
           uri: lb://user-management-service
           predicates:
-            - Path=/api/users/**
+            - Path=/api/users/**,/api/roles/**
           filters:
             - name: CircuitBreaker
               args:
@@ -110,6 +123,15 @@ spring:
           filters:
             - StripPrefix=2
             - RewritePath=/health/sync-c/(?<segment>.*), /actuator/$\{segment}
+        
+        # Frontend health check
+        - id: health-frontend
+          uri: lb://frontend-service
+          predicates:
+            - Path=/health/frontend/**
+          filters:
+            - StripPrefix=2
+            - RewritePath=/health/frontend/(?<segment>.*), /health
 
       # Global CORS configuration
       globalcors:
@@ -160,6 +182,16 @@ resilience4j:
         eventConsumerBufferSize: 10
       
       sync-c-cb:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 5s
+        failureRateThreshold: 50
+        eventConsumerBufferSize: 10
+      
+      frontend-cb:
         registerHealthIndicator: true
         slidingWindowSize: 10
         minimumNumberOfCalls: 5
