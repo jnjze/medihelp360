@@ -1,12 +1,11 @@
-# Multi-stage build para optimizar tamaño de imagen
+# Multi-stage build para React + Vite
 
-# Etapa 1: Build de React
+# Etapa 1: Build de React con Vite
 FROM node:18-alpine AS builder
 
-# Información del mantenedor
 LABEL maintainer="MediHelp360 Team"
 LABEL version="1.0.0"
-LABEL description="Frontend React para MediHelp360"
+LABEL description="MediHelp360 Frontend - Vite + React"
 
 # Crear directorio de trabajo
 WORKDIR /app
@@ -20,17 +19,17 @@ RUN npm ci --only=production && npm cache clean --force
 # Copiar código fuente
 COPY . .
 
-# Construir aplicación React para producción
-ARG REACT_APP_ENVIRONMENT=production
-ARG REACT_APP_API_BASE_URL=http://api-gateway:8080
-ARG REACT_APP_VERSION=1.0.0
+# Variables de entorno para build
+ARG VITE_API_BASE_URL=http://api-gateway:8080
+ARG VITE_ENV=production
+ARG VITE_APP_VERSION=1.0.0
 
-ENV REACT_APP_ENVIRONMENT=$REACT_APP_ENVIRONMENT
-ENV REACT_APP_API_BASE_URL=$REACT_APP_API_BASE_URL
-ENV REACT_APP_VERSION=$REACT_APP_VERSION
-ENV REACT_APP_DEBUG=false
-ENV GENERATE_SOURCEMAP=false
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+ENV VITE_ENV=$VITE_ENV
+ENV VITE_APP_VERSION=$VITE_APP_VERSION
+ENV VITE_DEBUG=false
 
+# Construir aplicación Vite para producción
 RUN npm run build
 
 # Etapa 2: Servir con Nginx
@@ -42,8 +41,8 @@ RUN apk add --no-cache curl
 # Copiar configuración personalizada de Nginx
 COPY nginx.conf /etc/nginx/nginx.conf
 
-# Copiar archivos compilados de React
-COPY --from=builder /app/build /usr/share/nginx/html
+# Copiar archivos compilados de Vite (dist en lugar de build)
+COPY --from=builder /app/dist /usr/share/nginx/html
 
 # Crear usuario no-root para seguridad
 RUN addgroup -g 1001 -S appgroup && \
