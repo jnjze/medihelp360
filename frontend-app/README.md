@@ -111,6 +111,8 @@ npm start
 ```
 Abre [http://localhost:3000](http://localhost:3000)
 
+**Nota:** En Docker modo desarrollo, el frontend estará en [http://localhost:3001](http://localhost:3001) para evitar conflicto con Grafana.
+
 ### **Build para producción**
 ```bash
 npm run build
