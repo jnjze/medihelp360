@@ -3,7 +3,7 @@
 ## 🎯 **Acceso a la aplicación:**
 
 ### **🌐 URLs principales:**
-- **Frontend React**: http://localhost:3001 (Puerto 3001 para evitar conflicto con Grafana)
+- **Frontend React**: http://localhost:4040
 - **API Gateway**: http://localhost:8080
 - **Consul UI**: http://localhost:8500
 
@@ -42,12 +42,12 @@ npm start
 ### **Desarrollo con Docker:**
 ```bash
 ./scripts/toggle-database-access.sh enable
-# Frontend disponible en http://localhost:3001
+# Frontend disponible en http://localhost:4040
 ```
 
 ## 📝 **Notas importantes:**
 
-- **Puerto 3000**: Reservado para Grafana
-- **Puerto 3001**: Frontend en Docker modo desarrollo
+- **Puerto 3000**: Grafana y desarrollo local del frontend (npm start)
+- **Puerto 4040**: Frontend en Docker modo desarrollo
 - **Puerto 8080**: API Gateway (punto de entrada principal)
 - **Puerto 8500**: Consul UI para administración

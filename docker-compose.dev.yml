@@ -7,7 +7,7 @@ services:
     build: ./frontend-app
     container_name: frontend-service-dev
     ports:
-      - "3001:3000"  # Puerto 3001 para evitar conflicto con Grafana (3000)
+      - "4040:3000"  # Puerto 4040 para el frontend
     environment:
       - REACT_APP_API_BASE_URL=http://localhost:8080
       - REACT_APP_ENVIRONMENT=development

@@ -56,7 +56,7 @@ enable_external_access() {
     echo "✅ Acceso externo habilitado exitosamente!"
     echo ""
     echo "📋 Puertos disponibles:"
-    echo "   Frontend:               http://localhost:3001"
+    echo "   Frontend:               http://localhost:4040"
     echo "   API Gateway:            http://localhost:8080"
     echo "   Consul UI:              http://localhost:8500"
     echo "   PostgreSQL (users):     localhost:5432"
