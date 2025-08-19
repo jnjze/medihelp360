@@ -36,7 +36,7 @@
 ```bash
 cd frontend-app
 npm start
-# Abre http://localhost:3000
+# Abre http://localhost:4040
 ```
 
 ### **Desarrollo con Docker:**
@@ -47,7 +47,7 @@ npm start
 
 ## 📝 **Notas importantes:**
 
-- **Puerto 3000**: Grafana y desarrollo local del frontend (npm start)
-- **Puerto 4040**: Frontend en Docker modo desarrollo
+- **Puerto 3000**: Grafana (libre para uso)
+- **Puerto 4040**: Frontend React (npm start y Docker)
 - **Puerto 8080**: API Gateway (punto de entrada principal)
 - **Puerto 8500**: Consul UI para administración

@@ -109,9 +109,9 @@ npm install
 ```bash
 npm start
 ```
-Abre [http://localhost:3000](http://localhost:3000)
+Abre [http://localhost:4040](http://localhost:4040)
 
-**Nota:** En Docker modo desarrollo, el frontend estará en [http://localhost:4040](http://localhost:4040).
+**Nota:** El frontend usa el puerto 4040 tanto en desarrollo local como en Docker.
 
 ### **Build para producción**
 ```bash
