@@ -70,15 +70,34 @@ CREATE INDEX idx_users_locked_until ON users(locked_until);
 
 -- Insert default admin user with hashed password (change this in production!)
 -- Password: admin123 (BCrypt hash)
-INSERT INTO users (id, email, name, password_hash, status, roles) 
+INSERT INTO users (id, email, name, password_hash, status) 
 VALUES (
     gen_random_uuid(),
     'admin@medihelp360.com',
     'System Administrator',
     '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDa',
-    'ACTIVE',
-    ARRAY['ADMIN']
+    'ACTIVE'
 ) ON CONFLICT (email) DO NOTHING;
+
+-- Get the admin user ID and role ID to create the relationship
+DO $$
+DECLARE
+    admin_user_id UUID;
+    admin_role_id UUID;
+BEGIN
+    -- Get admin user ID
+    SELECT id INTO admin_user_id FROM users WHERE email = 'admin@medihelp360.com';
+    
+    -- Get admin role ID
+    SELECT id INTO admin_role_id FROM roles WHERE name = 'ADMIN';
+    
+    -- Create user-role relationship
+    IF admin_user_id IS NOT NULL AND admin_role_id IS NOT NULL THEN
+        INSERT INTO user_roles (user_id, role_id) 
+        VALUES (admin_user_id, admin_role_id)
+        ON CONFLICT (user_id, role_id) DO NOTHING;
+    END IF;
+END $$;
 
 -- Create function to update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()
