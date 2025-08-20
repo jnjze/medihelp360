@@ -25,7 +25,7 @@
 							"raw": "{\n  \"email\": \"admin@medihelp360.com\",\n  \"password\": \"admin123\",\n  \"deviceInfo\": \"Postman Test\",\n  \"ipAddress\": \"127.0.0.1\"\n}"
 						},
 						"url": {
-							"raw": "{{base_url}}/api/auth/login",
+							"raw": "{{base_url}}/auth/login",
 							"host": [
 								"{{base_url}}"
 							],
@@ -54,7 +54,7 @@
 							"raw": "{\n  \"email\": \"invalid@example.com\",\n  \"password\": \"wrongpassword\",\n  \"deviceInfo\": \"Postman Test\",\n  \"ipAddress\": \"127.0.0.1\"\n}"
 						},
 						"url": {
-							"raw": "{{base_url}}/api/auth/login",
+							"raw": "{{base_url}}/auth/login",
 							"host": [
 								"{{base_url}}"
 							],
@@ -79,7 +79,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/api/auth/validate",
+							"raw": "{{base_url}}/auth/validate",
 							"host": [
 								"{{base_url}}"
 							],
@@ -104,7 +104,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/api/auth/logout",
+							"raw": "{{base_url}}/auth/logout",
 							"host": [
 								"{{base_url}}"
 							],
@@ -129,7 +129,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/api/auth/refresh",
+							"raw": "{{base_url}}/auth/refresh",
 							"host": [
 								"{{base_url}}"
 							],
@@ -184,7 +184,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/api/users/{{user_id}}",
+							"raw": "{{base_url}}/users/{{user_id}}",
 							"host": [
 								"{{base_url}}"
 							],
@@ -249,7 +249,7 @@
 							"raw": "{\n  \"name\": \"Dr. Juan Pérez Actualizado\",\n  \"status\": \"ACTIVE\"\n}"
 						},
 						"url": {
-							"raw": "{{base_url}}/api/users/{{user_id}}",
+							"raw": "{{base_url}}/users/{{user_id}}",
 							"host": [
 								"{{base_url}}"
 							],
@@ -274,7 +274,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/api/users/{{user_id}}",
+							"raw": "{{base_url}}/users/{{user_id}}",
 							"host": [
 								"{{base_url}}"
 							],

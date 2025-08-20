@@ -1,0 +1,67 @@
+spring:
+  application:
+    name: user-management-service
+  
+  cloud:
+    consul:
+      host: localhost
+      port: 8500
+      discovery:
+        enabled: false  # Disable Consul for development
+  
+  datasource:
+    url: jdbc:h2:mem:devdb
+    username: sa
+    password: 
+    driver-class-name: org.h2.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+  
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: true
+        jdbc:
+          batch_size: 20
+  
+  # Disable Kafka for development
+  kafka:
+    enabled: false
+  
+  # Disable Flyway for development
+  flyway:
+    enabled: false
+
+# JWT Configuration
+app:
+  jwt:
+    secret: dev-secret-key-for-testing-only
+    expiration: 1800
+    refresh-expiration: 604800
+
+server:
+  port: 8081
+  servlet:
+    context-path: /
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,loggers
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    com.medihelp360.user: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.web: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
