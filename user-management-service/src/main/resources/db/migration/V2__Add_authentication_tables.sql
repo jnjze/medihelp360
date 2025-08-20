@@ -1,0 +1,112 @@
+-- V2: Add authentication tables to user-management-service
+-- This migration extends the existing user management with authentication capabilities
+
+-- Table for user sessions (JWT tokens and refresh tokens)
+CREATE TABLE user_sessions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    token_hash VARCHAR(255) NOT NULL,
+    refresh_token_hash VARCHAR(255) NOT NULL,
+    device_info TEXT,
+    ip_address INET,
+    expires_at TIMESTAMP NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create indexes for performance
+CREATE INDEX idx_user_sessions_user_id ON user_sessions(user_id);
+CREATE INDEX idx_user_sessions_token_hash ON user_sessions(token_hash);
+CREATE INDEX idx_user_sessions_refresh_token_hash ON user_sessions(refresh_token_hash);
+CREATE INDEX idx_user_sessions_expires_at ON user_sessions(expires_at);
+
+-- Table for access logs (audit trail)
+CREATE TABLE access_logs (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+    action VARCHAR(100) NOT NULL,
+    ip_address INET,
+    user_agent TEXT,
+    success BOOLEAN NOT NULL DEFAULT true,
+    details JSONB,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create indexes for performance and queries
+CREATE INDEX idx_access_logs_user_id ON access_logs(user_id);
+CREATE INDEX idx_access_logs_action ON access_logs(action);
+CREATE INDEX idx_access_logs_success ON access_logs(success);
+CREATE INDEX idx_access_logs_timestamp ON access_logs(timestamp);
+
+-- Table for failed login attempts (rate limiting)
+CREATE TABLE failed_login_attempts (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    email VARCHAR(255) NOT NULL,
+    ip_address INET NOT NULL,
+    attempt_count INTEGER DEFAULT 1,
+    first_attempt_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    last_attempt_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    blocked_until TIMESTAMP
+);
+
+-- Create indexes for performance
+CREATE INDEX idx_failed_login_attempts_email ON failed_login_attempts(email);
+CREATE INDEX idx_failed_login_attempts_ip_address ON failed_login_attempts(ip_address);
+CREATE INDEX idx_failed_login_attempts_blocked_until ON failed_login_attempts(blocked_until);
+
+-- Add new columns to existing users table
+ALTER TABLE users 
+ADD COLUMN password_hash VARCHAR(255),
+ADD COLUMN last_login TIMESTAMP,
+ADD COLUMN failed_attempts INTEGER DEFAULT 0,
+ADD COLUMN account_locked BOOLEAN DEFAULT FALSE,
+ADD COLUMN locked_until TIMESTAMP,
+ADD COLUMN password_changed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+
+-- Add indexes for new columns
+CREATE INDEX idx_users_email_password ON users(email, password_hash);
+CREATE INDEX idx_users_account_locked ON users(account_locked);
+CREATE INDEX idx_users_locked_until ON users(locked_until);
+
+-- Insert default admin user with hashed password (change this in production!)
+-- Password: admin123 (BCrypt hash)
+INSERT INTO users (id, email, name, password_hash, status, roles) 
+VALUES (
+    gen_random_uuid(),
+    'admin@medihelp360.com',
+    'System Administrator',
+    '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDa',
+    'ACTIVE',
+    ARRAY['ADMIN']
+) ON CONFLICT (email) DO NOTHING;
+
+-- Create function to update updated_at timestamp
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+-- Create trigger for user_sessions table
+CREATE TRIGGER update_user_sessions_updated_at 
+    BEFORE UPDATE ON user_sessions 
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- Create trigger for users table
+CREATE TRIGGER update_users_updated_at 
+    BEFORE UPDATE ON users 
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- Insert initial access log for admin user creation
+INSERT INTO access_logs (user_id, action, ip_address, user_agent, success, details)
+SELECT 
+    u.id,
+    'USER_CREATED',
+    '127.0.0.1',
+    'System Migration',
+    true,
+    '{"migration": "V2", "type": "admin_user_creation"}'
+FROM users u 
+WHERE u.email = 'admin@medihelp360.com';

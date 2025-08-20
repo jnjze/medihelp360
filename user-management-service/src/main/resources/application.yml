@@ -71,6 +71,13 @@ spring:
       password: admin
       roles: ADMIN
 
+# JWT Configuration
+app:
+  jwt:
+    secret: ${JWT_SECRET:your-super-secret-jwt-key-for-medihelp360-development-only-change-in-production}
+    expiration: 1800  # 30 minutes in seconds
+    refresh-expiration: 604800  # 7 days in seconds
+
 server:
   port: 8081
   servlet:
