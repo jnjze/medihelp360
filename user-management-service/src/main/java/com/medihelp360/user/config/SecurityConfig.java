@@ -1,6 +1,7 @@
 package com.medihelp360.user.config;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -19,27 +20,36 @@ import java.util.Arrays;
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
+@Slf4j
 public class SecurityConfig {
     
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        log.info("Configuring Spring Security...");
+        
         http
             .csrf(AbstractHttpConfigurer::disable)
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                // Public endpoints
-                .requestMatchers("/api/auth/login").permitAll()
-                .requestMatchers("/api/auth/register").permitAll()
+                // Public endpoints - System (más específicos primero)
                 .requestMatchers("/actuator/**").permitAll()
                 .requestMatchers("/health").permitAll()
-                // Protected endpoints
-                .requestMatchers("/api/auth/**").authenticated()
+                .requestMatchers("/error").permitAll()
+                // Public endpoints - Authentication (más específicos)
+                .requestMatchers("/api/auth/login").permitAll()
+                .requestMatchers("/api/auth/register").permitAll()
+                .requestMatchers("/api/auth/validate").permitAll()
+                .requestMatchers("/api/auth/refresh").permitAll()
+                // Protected endpoints (más específicos)
+                .requestMatchers("/api/auth/logout").authenticated()
                 .requestMatchers("/api/users/**").authenticated()
                 .requestMatchers("/api/roles/**").authenticated()
+                // Default rule (más general al final)
                 .anyRequest().authenticated()
             );
         
+        log.info("Spring Security configuration completed");
         return http.build();
     }
     
