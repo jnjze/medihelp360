@@ -36,11 +36,11 @@ CREATE INDEX idx_roles_name ON roles(name);
 CREATE INDEX idx_user_roles_user_id ON user_roles(user_id);
 CREATE INDEX idx_user_roles_role_id ON user_roles(role_id);
 
--- Insertar roles básicos (los UUIDs se generarán en la aplicación)
+-- Insertar roles básicos
 INSERT INTO roles (id, name, description) VALUES 
-    ('550e8400-e29b-41d4-a716-446655440001', 'ADMIN', 'Administrador del sistema con acceso completo'),
-    ('550e8400-e29b-41d4-a716-446655440002', 'USER', 'Usuario estándar con permisos básicos'),
-    ('550e8400-e29b-41d4-a716-446655440003', 'MANAGER', 'Gestor con permisos intermedios');
+    (gen_random_uuid(), 'ADMIN', 'Administrador del sistema con acceso completo'),
+    (gen_random_uuid(), 'USER', 'Usuario estándar con permisos básicos'),
+    (gen_random_uuid(), 'MANAGER', 'Gestor con permisos intermedios');
 
 -- Función para actualizar timestamp (compatible con H2 y PostgreSQL)
 -- Nota: H2 no soporta triggers de la misma manera, así que usaremos la aplicación para esto 

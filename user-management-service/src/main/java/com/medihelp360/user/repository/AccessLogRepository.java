@@ -26,7 +26,7 @@ public interface AccessLogRepository extends JpaRepository<AccessLog, UUID> {
     @Query("SELECT a FROM AccessLog a WHERE a.ipAddress = :ipAddress ORDER BY a.timestamp DESC")
     List<AccessLog> findByIpAddressOrderByTimestampDesc(@Param("ipAddress") String ipAddress);
     
-    @Query("SELECT COUNT(a) FROM AccessLog a WHERE a.userId = :userId AND a.action = :action AND a.timestamp >= :since")
+    @Query("SELECT COUNT(a) FROM AccessLog a WHERE a.user = :userId AND a.action = :action AND a.timestamp >= :since")
     Long countByUserIdAndActionSince(@Param("userId") UUID userId, 
                                    @Param("action") String action, 
                                    @Param("since") LocalDateTime since);

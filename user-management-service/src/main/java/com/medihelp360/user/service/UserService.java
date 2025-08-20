@@ -60,7 +60,7 @@ public class UserService {
         User user = User.builder()
             .email(request.getEmail())
             .name(request.getName())
-            .password(passwordEncoder.encode(request.getPassword()))
+            .passwordHash(passwordEncoder.encode(request.getPassword()))
             .status(UserStatus.ACTIVE)
             .roles(managedRoles)
             .build();

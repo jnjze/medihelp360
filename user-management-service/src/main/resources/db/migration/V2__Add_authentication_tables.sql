@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS user_sessions (
     token_hash VARCHAR(255) NOT NULL,
     refresh_token_hash VARCHAR(255) NOT NULL,
     device_info TEXT,
-    ip_address INET,
+    ip_address VARCHAR(255),
     expires_at TIMESTAMP NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS access_logs (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID REFERENCES users(id) ON DELETE SET NULL,
     action VARCHAR(100) NOT NULL,
-    ip_address INET,
+    ip_address VARCHAR(255),
     user_agent TEXT,
     success BOOLEAN NOT NULL DEFAULT true,
     details JSONB,
@@ -42,7 +42,7 @@ CREATE INDEX idx_access_logs_timestamp ON access_logs(timestamp);
 CREATE TABLE IF NOT EXISTS failed_login_attempts (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     email VARCHAR(255) NOT NULL,
-    ip_address INET NOT NULL,
+    ip_address VARCHAR(255) NOT NULL,
     attempt_count INTEGER DEFAULT 1,
     first_attempt_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     last_attempt_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -109,7 +109,7 @@ END $$;
 
 -- Insert default admin user with hashed password (change this in production!)
 -- Password: admin123 (BCrypt hash)
-INSERT INTO users (id, email, name, password_hash, status) 
+INSERT INTO users (id, email, name, password, status)
 VALUES (
     gen_random_uuid(),
     'admin@medihelp360.com',
