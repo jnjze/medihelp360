@@ -31,24 +31,24 @@ spring:
           enabled: true
           lower-case-service-id: true
       routes:
-        # Frontend React App (debe ir PRIMERO para capturar rutas raíz)
+        # Frontend React App (solo para rutas específicas del frontend)
         - id: frontend-app
           uri: lb://frontend-service
           predicates:
-            - Path=/**
+            - Path=/,/index.html,/static/**
           filters:
             - name: CircuitBreaker
               args:
                 name: frontend-cb
                 fallbackUri: forward:/fallback/frontend
-          # Orden de precedencia más alto
-          order: 1000
+          # Orden más bajo para que no interfiera con APIs
+          order: 100
 
         # User Management Service
         - id: user-management
           uri: lb://user-management-service
           predicates:
-            - Path=/api/users/**,/api/roles/**
+            - Path=/auth/**,/users/**,/roles/**
           filters:
             - name: CircuitBreaker
               args:
@@ -93,11 +93,19 @@ spring:
         
         # Health checks routing
         - id: health-user-management
-          uri: http://localhost:8081
+          uri: lb://user-management-service
           predicates:
             - Path=/health/user-management/**
           filters:
             - StripPrefix=2
+        
+        # User Management Actuator endpoints
+        - id: user-management-actuator
+          uri: lb://user-management-service
+          predicates:
+            - Path=/actuator/**
+          filters:
+            - StripPrefix=0
             - RewritePath=/health/user-management/(?<segment>.*), /actuator/$\{segment}
         
         - id: health-sync-a
