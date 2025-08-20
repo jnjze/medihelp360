@@ -3,6 +3,8 @@ package com.medihelp360.user.service;
 import com.medihelp360.user.domain.*;
 import com.medihelp360.user.dto.LoginRequest;
 import com.medihelp360.user.dto.LoginResponse;
+import com.medihelp360.user.dto.RegisterRequest;
+import com.medihelp360.user.dto.RegisterResponse;
 import com.medihelp360.user.repository.AccessLogRepository;
 import com.medihelp360.user.repository.FailedLoginAttemptRepository;
 import com.medihelp360.user.repository.UserRepository;
@@ -23,6 +25,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -36,6 +39,7 @@ public class AuthenticationService {
     private final AccessLogRepository accessLogRepository;
     private final FailedLoginAttemptRepository failedLoginAttemptRepository;
     private final PasswordEncoder passwordEncoder;
+    private final RoleService roleService;
     
     @Value("${app.jwt.secret:defaultSecretKeyForDevelopmentOnly}")
     private String jwtSecret;
@@ -262,5 +266,88 @@ public class AuthenticationService {
     
     private void resetFailedAttempts(String email, String ipAddress) {
         failedLoginAttemptRepository.deleteByEmailAndIpAddress(email, ipAddress);
+    }
+    
+    /**
+     * Register a new user with default USER role
+     */
+    @Transactional
+    public RegisterResponse register(RegisterRequest request) {
+        log.info("Registration request received for email: {}", request.getEmail());
+        
+        // Validate password confirmation
+        if (!request.isPasswordMatching()) {
+            throw new IllegalArgumentException("Password and confirmation password do not match");
+        }
+        
+        // Check if email already exists
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new IllegalArgumentException("Email already exists: " + request.getEmail());
+        }
+        
+        try {
+            // Get default USER role
+            Role userRole = roleService.getRoleByName("USER");
+            
+            // Create user with default role
+            User user = User.builder()
+                .email(request.getEmail())
+                .name(request.getName())
+                .passwordHash(passwordEncoder.encode(request.getPassword()))
+                .status(UserStatus.ACTIVE)
+                .roles(Set.of(userRole))
+                .build();
+            
+            User savedUser = userRepository.save(user);
+            
+            // Log successful registration
+            AccessLog registrationLog = AccessLog.builder()
+                .user(savedUser)
+                .action("USER_REGISTRATION")
+                .ipAddress(request.getIpAddress())
+                .userAgent(request.getDeviceInfo())
+                .success(true)
+                .details("User registered successfully")
+                .build();
+            accessLogRepository.save(registrationLog);
+            
+            log.info("User registered successfully with ID: {}", savedUser.getId());
+            
+            return RegisterResponse.success(
+                savedUser.getId().toString(),
+                savedUser.getEmail(),
+                savedUser.getName(),
+                savedUser.getStatus().toString(),
+                savedUser.getRoles().stream().map(Role::getName).collect(Collectors.toSet()),
+                savedUser.getCreatedAt()
+            );
+            
+        } catch (IllegalArgumentException e) {
+            if (e.getMessage().contains("Role not found")) {
+                log.warn("USER role not found, creating user without roles");
+                
+                // Create user without roles if USER role doesn't exist
+                User user = User.builder()
+                    .email(request.getEmail())
+                    .name(request.getName())
+                    .passwordHash(passwordEncoder.encode(request.getPassword()))
+                    .status(UserStatus.ACTIVE)
+                    .build();
+                
+                User savedUser = userRepository.save(user);
+                
+                log.info("User registered successfully without default role with ID: {}", savedUser.getId());
+                
+                return RegisterResponse.success(
+                    savedUser.getId().toString(),
+                    savedUser.getEmail(),
+                    savedUser.getName(),
+                    savedUser.getStatus().toString(),
+                    Set.of(),
+                    savedUser.getCreatedAt()
+                );
+            }
+            throw e;
+        }
     }
 }

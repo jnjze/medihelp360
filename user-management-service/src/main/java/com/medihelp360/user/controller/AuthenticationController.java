@@ -2,6 +2,8 @@ package com.medihelp360.user.controller;
 
 import com.medihelp360.user.dto.LoginRequest;
 import com.medihelp360.user.dto.LoginResponse;
+import com.medihelp360.user.dto.RegisterRequest;
+import com.medihelp360.user.dto.RegisterResponse;
 import com.medihelp360.user.service.AuthenticationService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +44,33 @@ public class AuthenticationController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             log.warn("Login failed for user: {} - {}", request.getEmail(), e.getMessage());
+            return ResponseEntity.badRequest().build();
+        }
+    }
+    
+    @PostMapping("/register")
+    public ResponseEntity<RegisterResponse> register(@Valid @RequestBody RegisterRequest request,
+                                                   HttpServletRequest httpRequest) {
+        log.info("Registration request received for email: {}", request.getEmail());
+        
+        // Extract IP address and user agent
+        String ipAddress = getClientIpAddress(httpRequest);
+        String userAgent = httpRequest.getHeader("User-Agent");
+        
+        // Set IP address and user agent if not provided
+        if (request.getIpAddress() == null) {
+            request.setIpAddress(ipAddress);
+        }
+        if (request.getDeviceInfo() == null) {
+            request.setDeviceInfo(userAgent);
+        }
+        
+        try {
+            RegisterResponse response = authenticationService.register(request);
+            log.info("Registration successful for email: {}", request.getEmail());
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.warn("Registration failed for email: {} - {}", request.getEmail(), e.getMessage());
             return ResponseEntity.badRequest().build();
         }
     }

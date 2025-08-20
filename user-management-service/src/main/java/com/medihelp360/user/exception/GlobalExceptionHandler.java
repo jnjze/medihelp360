@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
-@RestControllerAdvice
+// @RestControllerAdvice  // Comentado temporalmente para debug
 @Slf4j
 public class GlobalExceptionHandler {
     
