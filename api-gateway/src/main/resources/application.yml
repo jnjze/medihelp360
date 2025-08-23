@@ -1,5 +1,9 @@
 server:
   port: 8080
+  # Deshabilitar CORS por defecto del servidor
+  servlet:
+    cors:
+      enabled: false
 
 spring:
   application:
@@ -26,6 +30,16 @@ spring:
           - version-1.0
     
     gateway:
+      # Deshabilitar CORS por defecto para usar nuestro filtro personalizado
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: []
+            allowedMethods: []
+            allowedHeaders: []
+            allowCredentials: false
+            maxAge: 0
+      
       discovery:
         locator:
           enabled: true
