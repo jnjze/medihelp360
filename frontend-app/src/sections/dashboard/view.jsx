@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
-import Grid from '@mui/material/Grid2';
+import Grid from '@mui/material/Grid';
 import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
 import Container from '@mui/material/Container';
@@ -12,8 +12,6 @@ import CircularProgress from '@mui/material/CircularProgress';
 
 import { Iconify } from 'src/components/iconify';
 import { useSettingsContext } from 'src/components/settings';
-
-import { apiService } from '../api/api-service';
 
 // ----------------------------------------------------------------------
 
@@ -29,7 +27,7 @@ export function DashboardView() {
   const loadDashboardData = async () => {
     try {
       setLoading(true);
-      
+
       // Simular datos por ahora
       const mockStats = {
         totalUsers: 25,
@@ -140,7 +138,12 @@ export function DashboardView() {
                     ))}
                   </Stack>
                 </Stack>
-                <Iconify icon="solar:heart-pulse-bold" width={48} height={48} sx={{ color: 'warning.main' }} />
+                <Iconify
+                  icon="solar:heart-pulse-bold"
+                  width={48}
+                  height={48}
+                  sx={{ color: 'warning.main' }}
+                />
               </Stack>
             </CardContent>
           </Card>
@@ -183,11 +186,7 @@ export function DashboardView() {
                 <Grid xs={12} sm={6} md={3}>
                   <Stack spacing={1}>
                     <Typography variant="subtitle2">Frontend:</Typography>
-                    <Chip
-                      label="Vite + React"
-                      color="info"
-                      size="small"
-                    />
+                    <Chip label="Vite + React" color="info" size="small" />
                   </Stack>
                 </Grid>
               </Grid>

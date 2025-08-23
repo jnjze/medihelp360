@@ -54,10 +54,10 @@ export const navData = [
         icon: ICONS.dashboard,
         info: <Label>v{CONFIG.appVersion}</Label>,
       },
-      { 
-        title: 'Estado del Sistema', 
-        path: paths.dashboard.systemStatus, 
-        icon: ICONS.analytics 
+      {
+        title: 'Estado del Sistema',
+        path: paths.dashboard.systemStatus,
+        icon: ICONS.analytics,
       },
     ],
   },
@@ -90,17 +90,17 @@ export const navData = [
         path: paths.dashboard.syncServices.root,
         icon: ICONS.folder,
         children: [
-          { 
-            title: 'Sync Service A (PostgreSQL)', 
-            path: paths.dashboard.syncServices.serviceA 
+          {
+            title: 'Sync Service A (PostgreSQL)',
+            path: paths.dashboard.syncServices.serviceA,
           },
-          { 
-            title: 'Sync Service B (MySQL)', 
-            path: paths.dashboard.syncServices.serviceB 
+          {
+            title: 'Sync Service B (MySQL)',
+            path: paths.dashboard.syncServices.serviceB,
           },
-          { 
-            title: 'Sync Service C (MongoDB)', 
-            path: paths.dashboard.syncServices.serviceC 
+          {
+            title: 'Sync Service C (MongoDB)',
+            path: paths.dashboard.syncServices.serviceC,
           },
         ],
       },

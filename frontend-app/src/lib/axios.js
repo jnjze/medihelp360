@@ -27,6 +27,25 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
+    // Manejar errores estructurados del backend
+    if (error?.response?.data) {
+      const errorData = error.response.data;
+      
+      // Si es un ErrorResponse estructurado del backend
+      if (errorData.error && errorData.message) {
+        const structuredError = new Error(errorData.message);
+        structuredError.errorData = errorData;
+        structuredError.status = errorData.status;
+        structuredError.errorCode = errorData.errorCode;
+        structuredError.validationErrors = errorData.validationErrors;
+        structuredError.suggestion = errorData.suggestion;
+        
+        console.error('Structured API error:', errorData);
+        return Promise.reject(structuredError);
+      }
+    }
+    
+    // Fallback para errores no estructurados
     const message = error?.response?.data?.message || error?.message || 'Something went wrong!';
     console.error('Axios error:', message);
     return Promise.reject(new Error(message));
@@ -53,14 +72,32 @@ export const fetcher = async (args) => {
 // ----------------------------------------------------------------------
 
 export const endpoints = {
+  // MediHelp360 API endpoints
+  auth: {
+    login: '/auth/login',
+    register: '/auth/register',
+    logout: '/auth/logout',
+    validate: '/auth/validate',
+    refresh: '/auth/refresh',
+  },
+  users: {
+    list: '/users',
+    details: '/users',
+    create: '/users',
+    update: '/users',
+    delete: '/users',
+  },
+  roles: {
+    list: '/roles',
+    details: '/roles',
+    create: '/roles',
+    update: '/roles',
+    delete: '/roles',
+  },
+  // Legacy endpoints (mantener para compatibilidad)
   chat: '/api/chat',
   kanban: '/api/kanban',
   calendar: '/api/calendar',
-  auth: {
-    me: '/api/auth/me',
-    signIn: '/api/auth/sign-in',
-    signUp: '/api/auth/sign-up',
-  },
   mail: {
     list: '/api/mail/list',
     details: '/api/mail/details',
@@ -69,7 +106,7 @@ export const endpoints = {
   post: {
     list: '/api/post/list',
     details: '/api/post/details',
-    latest: '/api/post/latest',
+    latest: '/api/post/post/latest',
     search: '/api/post/search',
   },
   product: {

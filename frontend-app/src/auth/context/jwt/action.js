@@ -12,15 +12,22 @@ export const signInWithPassword = async ({ email, password }) => {
   try {
     const params = { email, password };
 
-    const res = await axios.post(endpoints.auth.signIn, params);
+    const res = await axios.post(endpoints.auth.login, params);
 
-    const { accessToken } = res.data;
+    const { accessToken, refreshToken, user } = res.data;
 
     if (!accessToken) {
       throw new Error('Access token not found in response');
     }
 
     setSession(accessToken);
+    
+    // Opcional: guardar información del usuario
+    if (user) {
+      sessionStorage.setItem('user', JSON.stringify(user));
+    }
+    
+    return res.data;
   } catch (error) {
     console.error('Error during sign in:', error);
     throw error;
@@ -30,24 +37,30 @@ export const signInWithPassword = async ({ email, password }) => {
 /** **************************************
  * Sign up
  *************************************** */
-export const signUp = async ({ email, password, firstName, lastName }) => {
+export const signUp = async ({ email, password, name, confirmPassword }) => {
   const params = {
     email,
     password,
-    firstName,
-    lastName,
+    name,
+    confirmPassword,
   };
 
   try {
-    const res = await axios.post(endpoints.auth.signUp, params);
+    const res = await axios.post(endpoints.auth.register, params);
 
-    const { accessToken } = res.data;
+    // El backend devuelve RegisterResponse, no accessToken
+    const { id, email: userEmail, name: userName, status, roles, message } = res.data;
 
-    if (!accessToken) {
-      throw new Error('Access token not found in response');
+    if (!id) {
+      throw new Error('User ID not found in response');
     }
 
-    sessionStorage.setItem(JWT_STORAGE_KEY, accessToken);
+    console.log('Registration successful:', { id, userEmail, userName, status, roles, message });
+    
+    // No guardamos token aquí, solo registramos al usuario
+    // El usuario deberá hacer login después del registro
+    
+    return res.data;
   } catch (error) {
     console.error('Error during sign up:', error);
     throw error;

@@ -27,13 +27,20 @@ import { SignUpTerms } from '../../components/sign-up-terms';
 // ----------------------------------------------------------------------
 
 export const SignUpSchema = z.object({
-  firstName: z.string().min(1, { message: 'First name is required!' }),
-  lastName: z.string().min(1, { message: 'Last name is required!' }),
+  name: z.string().min(2, { message: 'Name must be at least 2 characters!' }).max(100, { message: 'Name must be less than 100 characters!' }),
   email: schemaUtils.email(),
   password: z
     .string()
     .min(1, { message: 'Password is required!' })
-    .min(6, { message: 'Password must be at least 6 characters!' }),
+    .min(8, { message: 'Password must be at least 8 characters!' })
+    .max(128, { message: 'Password must be less than 128 characters!' })
+    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/, {
+      message: 'Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character'
+    }),
+  confirmPassword: z.string().min(1, { message: 'Password confirmation is required!' }),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
 });
 
 // ----------------------------------------------------------------------
@@ -48,10 +55,10 @@ export function JwtSignUpView() {
   const [errorMessage, setErrorMessage] = useState(null);
 
   const defaultValues = {
-    firstName: 'Hello',
-    lastName: 'Friend',
-    email: 'hello@gmail.com',
-    password: '@2Minimal',
+    name: 'Test User',
+    email: 'test@example.com',
+    password: 'SecurePass123!',
+    confirmPassword: 'SecurePass123!',
   };
 
   const methods = useForm({
@@ -66,45 +73,83 @@ export function JwtSignUpView() {
 
   const onSubmit = handleSubmit(async (data) => {
     try {
-      await signUp({
+      const registrationResult = await signUp({
         email: data.email,
         password: data.password,
-        firstName: data.firstName,
-        lastName: data.lastName,
+        name: data.name,
+        confirmPassword: data.confirmPassword,
       });
-      await checkUserSession?.();
-
-      router.refresh();
+      
+      console.log('Registration successful:', registrationResult);
+      
+      // Mostrar mensaje de éxito
+      setErrorMessage(null);
+      
+      // Redirigir al login después de registro exitoso
+      router.push(paths.auth.jwt.signIn);
+      
     } catch (error) {
-      console.error(error);
-      const feedbackMessage = getErrorMessage(error);
-      setErrorMessage(feedbackMessage);
+      console.error('Registration error:', error);
+      
+      // Manejar errores estructurados del backend
+      if (error.errorData) {
+        const { message, suggestion, validationErrors } = error.errorData;
+        
+        if (validationErrors && validationErrors.length > 0) {
+          // Mostrar errores de validación específicos
+          const validationMessages = validationErrors.map(err => `${err.field}: ${err.message}`).join(', ');
+          setErrorMessage(`${message}. ${validationMessages}`);
+        } else {
+          // Mostrar mensaje principal con sugerencia
+          setErrorMessage(suggestion ? `${message}. ${suggestion}` : message);
+        }
+      } else {
+        // Fallback para errores no estructurados
+        const feedbackMessage = getErrorMessage(error);
+        setErrorMessage(feedbackMessage);
+      }
     }
   });
 
   const renderForm = () => (
     <Box sx={{ gap: 3, display: 'flex', flexDirection: 'column' }}>
-      <Box
-        sx={{ display: 'flex', gap: { xs: 3, sm: 2 }, flexDirection: { xs: 'column', sm: 'row' } }}
-      >
-        <Field.Text
-          name="firstName"
-          label="First name"
-          slotProps={{ inputLabel: { shrink: true } }}
-        />
-        <Field.Text
-          name="lastName"
-          label="Last name"
-          slotProps={{ inputLabel: { shrink: true } }}
-        />
-      </Box>
+      <Field.Text
+        name="name"
+        label="Full Name"
+        placeholder="Enter your full name"
+        slotProps={{ inputLabel: { shrink: true } }}
+      />
 
-      <Field.Text name="email" label="Email address" slotProps={{ inputLabel: { shrink: true } }} />
+      <Field.Text 
+        name="email" 
+        label="Email address" 
+        placeholder="Enter your email"
+        slotProps={{ inputLabel: { shrink: true } }} 
+      />
 
       <Field.Text
         name="password"
         label="Password"
-        placeholder="6+ characters"
+        placeholder="8+ characters with uppercase, lowercase, digit & special char"
+        type={showPassword.value ? 'text' : 'password'}
+        slotProps={{
+          inputLabel: { shrink: true },
+          input: {
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton onClick={showPassword.onToggle} edge="end">
+                  <Iconify icon={showPassword.value ? 'solar:eye-bold' : 'solar:eye-closed-bold'} />
+                </IconButton>
+              </InputAdornment>
+            ),
+          },
+        }}
+      />
+
+      <Field.Text
+        name="confirmPassword"
+        label="Confirm Password"
+        placeholder="Confirm your password"
         type={showPassword.value ? 'text' : 'password'}
         slotProps={{
           inputLabel: { shrink: true },
@@ -137,12 +182,12 @@ export function JwtSignUpView() {
   return (
     <>
       <FormHead
-        title="Get started absolutely free"
+        title="Join MediHelp360"
         description={
           <>
             {`Already have an account? `}
             <Link component={RouterLink} href={paths.auth.jwt.signIn} variant="subtitle2">
-              Get started
+              Sign in here
             </Link>
           </>
         }

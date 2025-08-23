@@ -3,14 +3,14 @@ import { useState } from 'react';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
-import TextField from '@mui/material/TextField';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
+import TextField from '@mui/material/TextField';
+import InputLabel from '@mui/material/InputLabel';
+import DialogTitle from '@mui/material/DialogTitle';
+import FormControl from '@mui/material/FormControl';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
 
 // ----------------------------------------------------------------------
 
@@ -23,7 +23,7 @@ export function UserCreateDialog({ open, onClose, onSubmit }) {
   });
 
   const handleChange = (field) => (event) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [field]: event.target.value,
     }));
@@ -54,7 +54,7 @@ export function UserCreateDialog({ open, onClose, onSubmit }) {
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
       <DialogTitle>Crear Nuevo Usuario</DialogTitle>
-      
+
       <DialogContent>
         <Stack spacing={3} sx={{ mt: 1 }}>
           <TextField
@@ -64,7 +64,7 @@ export function UserCreateDialog({ open, onClose, onSubmit }) {
             fullWidth
             required
           />
-          
+
           <TextField
             label="Email"
             type="email"
@@ -73,14 +73,10 @@ export function UserCreateDialog({ open, onClose, onSubmit }) {
             fullWidth
             required
           />
-          
+
           <FormControl fullWidth>
             <InputLabel>Estado</InputLabel>
-            <Select
-              value={formData.status}
-              label="Estado"
-              onChange={handleChange('status')}
-            >
+            <Select value={formData.status} label="Estado" onChange={handleChange('status')}>
               <MenuItem value="ACTIVE">Activo</MenuItem>
               <MenuItem value="INACTIVE">Inactivo</MenuItem>
               <MenuItem value="PENDING">Pendiente</MenuItem>
@@ -88,13 +84,11 @@ export function UserCreateDialog({ open, onClose, onSubmit }) {
           </FormControl>
         </Stack>
       </DialogContent>
-      
+
       <DialogActions>
-        <Button onClick={handleClose}>
-          Cancelar
-        </Button>
-        <Button 
-          onClick={handleSubmit} 
+        <Button onClick={handleClose}>Cancelar</Button>
+        <Button
+          onClick={handleSubmit}
           variant="contained"
           disabled={!formData.name || !formData.email}
         >

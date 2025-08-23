@@ -19,7 +19,6 @@ import { useSettingsContext } from 'src/components/settings';
 import { UserTableRow } from './user-table-row';
 import { UserTableHead } from './user-table-head';
 import { UserCreateDialog } from './user-create-dialog';
-import { apiService } from '../api/api-service';
 
 // ----------------------------------------------------------------------
 
@@ -39,7 +38,7 @@ export function UsersView() {
   const loadUsers = useCallback(async () => {
     try {
       setLoading(true);
-      
+
       // Mock data para demostración
       const mockUsers = [
         {
@@ -88,7 +87,7 @@ export function UsersView() {
   const handleDeleteUser = useCallback(async (id) => {
     try {
       // await apiService.users.delete(id);
-      setUsers(prev => prev.filter(user => user.id !== id));
+      setUsers((prev) => prev.filter((user) => user.id !== id));
       console.log('User deleted:', id);
     } catch (error) {
       console.error('Error deleting user:', error);
@@ -103,7 +102,7 @@ export function UsersView() {
         ...userData,
         createdAt: new Date().toISOString().split('T')[0],
       };
-      setUsers(prev => [...prev, newUser]);
+      setUsers((prev) => [...prev, newUser]);
       setOpenCreate(false);
       console.log('User created:', newUser);
     } catch (error) {

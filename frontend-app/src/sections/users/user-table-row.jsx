@@ -67,13 +67,7 @@ export function UserTableRow({ user, onDelete }) {
         <TableCell>
           <Stack direction="row" spacing={0.5}>
             {user.roles?.map((role) => (
-              <Chip
-                key={role}
-                label={role}
-                size="small"
-                variant="soft"
-                color="primary"
-              />
+              <Chip key={role} label={role} size="small" variant="soft" color="primary" />
             ))}
           </Stack>
         </TableCell>
