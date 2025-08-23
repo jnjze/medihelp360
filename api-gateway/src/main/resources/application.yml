@@ -141,19 +141,19 @@ spring:
             - StripPrefix=2
             - RewritePath=/health/frontend/(?<segment>.*), /health
 
-      # Global CORS configuration
-      globalcors:
-        cors-configurations:
-          '[/**]':
-            allowedOrigins: "*"
-            allowedMethods:
-              - GET
-              - POST
-              - PUT
-              - DELETE
-              - OPTIONS
-            allowedHeaders: "*"
-            allowCredentials: false
+      # Global CORS configuration - Comentado para usar CorsConfig.java
+      # globalcors:
+      #   cors-configurations:
+      #     '[/**]':
+      #       allowedOrigins: "*"
+      #       allowedMethods:
+      #         - GET
+      #         - POST
+      #         - PUT
+      #         - DELETE
+      #         - OPTIONS
+      #       allowedHeaders: "*"
+      #       allowCredentials: false
 
 # Circuit Breaker Configuration
 resilience4j:
