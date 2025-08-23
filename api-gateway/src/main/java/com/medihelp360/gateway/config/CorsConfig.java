@@ -10,48 +10,16 @@ import org.springframework.web.reactive.config.WebFluxConfigurer;
 
 import java.util.Arrays;
 
-@Configuration
+// @Configuration  // Comentado para evitar conflicto con CorsFilter
 public class CorsConfig implements WebFluxConfigurer {
 
-    @Override
-    public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**")
-                .allowedOrigins(
-                    "http://localhost:4040",  // Frontend Vite
-                    "http://localhost:3000",  // Frontend CRA
-                    "http://127.0.0.1:4040", // Frontend Vite (alternativo)
-                    "http://127.0.0.1:3000"  // Frontend CRA (alternativo)
-                )
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                .allowedHeaders("*")
-                .allowCredentials(true)
-                .maxAge(3600);
-    }
+    // @Override  // Comentado para evitar conflicto con CorsFilter
+    // public void addCorsMappings(CorsRegistry registry) {
+    //     // Comentado para evitar conflicto con CorsFilter
+    // }
 
-    @Bean
-    public CorsWebFilter corsWebFilter() {
-        CorsConfiguration corsConfig = new CorsConfiguration();
-        
-        // Configuración específica para desarrollo
-        corsConfig.setAllowedOrigins(Arrays.asList(
-            "http://localhost:4040",  // Frontend Vite
-            "http://localhost:3000",  // Frontend CRA
-            "http://127.0.0.1:4040", // Frontend Vite (alternativo)
-            "http://127.0.0.1:3000"  // Frontend CRA (alternativo)
-        ));
-        
-        corsConfig.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        corsConfig.setAllowedHeaders(Arrays.asList(
-            "Origin", "Content-Type", "Accept", "Authorization", 
-            "X-Requested-With", "Cache-Control", "Pragma"
-        ));
-        corsConfig.setExposedHeaders(Arrays.asList("Authorization", "X-Total-Count"));
-        corsConfig.setAllowCredentials(true);
-        corsConfig.setMaxAge(3600L);
-
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", corsConfig);
-
-        return new CorsWebFilter(source);
-    }
+    // @Bean  // Comentado para evitar conflicto con CorsFilter
+    // public CorsWebFilter corsWebFilter() {
+    //     // Comentado para evitar conflicto con CorsFilter
+    // }
 }
