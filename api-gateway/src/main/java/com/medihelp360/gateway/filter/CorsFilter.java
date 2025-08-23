@@ -49,6 +49,14 @@ public class CorsFilter implements GlobalFilter {
         
         log.debug("CORS Filter: Processing request from origin: {} with method: {}", origin, method);
 
+        // Limpiar cualquier header CORS existente para evitar duplicados
+        response.getHeaders().remove("Access-Control-Allow-Origin");
+        response.getHeaders().remove("Access-Control-Allow-Methods");
+        response.getHeaders().remove("Access-Control-Allow-Headers");
+        response.getHeaders().remove("Access-Control-Allow-Credentials");
+        response.getHeaders().remove("Access-Control-Expose-Headers");
+        response.getHeaders().remove("Access-Control-Max-Age");
+
         // Manejar preflight OPTIONS request
         if ("OPTIONS".equals(method)) {
             return handlePreflightRequest(exchange);
@@ -101,6 +109,9 @@ public class CorsFilter implements GlobalFilter {
         headers.add("Access-Control-Allow-Origin", origin);
         headers.add("Access-Control-Allow-Credentials", "true");
         headers.add("Access-Control-Expose-Headers", "Authorization, X-Total-Count");
+        
+        log.debug("CORS Filter: Added headers - Origin: {}, Credentials: true, Expose: Authorization, X-Total-Count", origin);
+        log.debug("CORS Filter: Final response headers: {}", headers);
     }
 
     private boolean isAllowedOrigin(String origin) {
