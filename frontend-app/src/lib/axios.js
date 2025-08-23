@@ -23,7 +23,7 @@ axiosInstance.interceptors.request.use((config) => {
     method: config.method?.toUpperCase(),
     url: config.url,
     baseURL: config.baseURL || 'relative (proxy)',
-    fullURL: fullURL,
+    fullURL,
     headers: config.headers,
     isProxy: !config.baseURL,
   });

@@ -9,6 +9,7 @@ import Link from '@mui/material/Link';
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
+import Typography from '@mui/material/Typography';
 import InputAdornment from '@mui/material/InputAdornment';
 
 import { paths } from 'src/routes/paths';
@@ -19,11 +20,11 @@ import { Iconify } from 'src/components/iconify';
 import { Form, Field, schemaUtils } from 'src/components/hook-form';
 
 import { signUp } from '../../context/jwt';
-import { useAuthContext } from '../../hooks';
+// import { useAuthContext } from '../../hooks'; // Not needed for registration
 import { getErrorMessage } from '../../utils';
 import { FormHead } from '../../components/form-head';
 import { SignUpTerms } from '../../components/sign-up-terms';
-import { testProxyConnection, checkEnvironment } from '../../../utils/proxyTest';
+import { checkEnvironment, testProxyConnection } from '../../../utils/proxyTest';
 
 // ----------------------------------------------------------------------
 
@@ -51,7 +52,7 @@ export function JwtSignUpView() {
 
   const showPassword = useBoolean();
 
-  const { checkUserSession } = useAuthContext();
+  // const { checkUserSession } = useAuthContext(); // Not needed for registration
 
   const [errorMessage, setErrorMessage] = useState(null);
 
