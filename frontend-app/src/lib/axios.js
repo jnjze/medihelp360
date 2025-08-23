@@ -24,33 +24,6 @@ const axiosInstance = axios.create({
 *
 */
 
-axiosInstance.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    // Manejar errores estructurados del backend
-    if (error?.response?.data) {
-      const errorData = error.response.data;
-      
-      // Si es un ErrorResponse estructurado del backend
-      if (errorData.error && errorData.message) {
-        const structuredError = new Error(errorData.message);
-        structuredError.errorData = errorData;
-        structuredError.status = errorData.status;
-        structuredError.errorCode = errorData.errorCode;
-        structuredError.validationErrors = errorData.validationErrors;
-        structuredError.suggestion = errorData.suggestion;
-        
-        console.error('Structured API error:', errorData);
-        return Promise.reject(structuredError);
-      }
-    }
-    
-    // Fallback para errores no estructurados
-    const message = error?.response?.data?.message || error?.message || 'Something went wrong!';
-    console.error('Axios error:', message);
-    return Promise.reject(new Error(message));
-  }
-);
 
 export default axiosInstance;
 
