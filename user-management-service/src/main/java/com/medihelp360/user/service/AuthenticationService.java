@@ -119,9 +119,8 @@ public class AuthenticationService {
         userSessionRepository.save(session);
         
         // Log successful login
-        AccessLog successLog = AccessLog.loginSuccess(user, request.getIpAddress(), request.getDeviceInfo());
-        accessLogRepository.save(successLog);
-        
+        performAuditSaveUser(AccessLog.loginSuccess(user, request.getIpAddress(), request.getDeviceInfo()));
+
         // Reset failed attempts for this IP
         resetFailedAttempts(request.getEmail(), request.getIpAddress());
         
@@ -154,9 +153,8 @@ public class AuthenticationService {
             User user = session.getUser();
             
             // Log logout
-            AccessLog logoutLog = AccessLog.logout(user, ipAddress, userAgent);
-            accessLogRepository.save(logoutLog);
-            
+            performAuditSaveUser(AccessLog.buildAuditObject("LOGOUT", user, ipAddress, userAgent));
+
             // Remove session
             userSessionRepository.delete(session);
             
@@ -260,8 +258,7 @@ public class AuthenticationService {
         }
         
         // Log failed attempt
-        AccessLog failedLog = AccessLog.loginFailed(email, ipAddress, "", reason);
-        accessLogRepository.save(failedLog);
+        performAuditSaveUser(AccessLog.loginFailed(email, ipAddress, "", reason));
     }
     
     private void resetFailedAttempts(String email, String ipAddress) {
@@ -276,7 +273,7 @@ public class AuthenticationService {
         log.info("Registration request received for email: {}", request.getEmail());
         
         // Validate password confirmation
-        if (!request.isPasswordMatching()) {
+            if (!request.isPasswordMatching()) {
             throw new IllegalArgumentException("Password and confirmation password do not match");
         }
         
@@ -296,21 +293,21 @@ public class AuthenticationService {
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .status(UserStatus.ACTIVE)
                 .roles(Set.of(userRole))
+                .createdAt(new Date().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime())
                 .build();
             
             User savedUser = userRepository.save(user);
             
             // Log successful registration
-            AccessLog registrationLog = AccessLog.builder()
-                .user(savedUser)
-                .action("USER_REGISTRATION")
-                .ipAddress(request.getIpAddress())
-                .userAgent(request.getDeviceInfo())
-                .success(true)
-                .details("User registered successfully")
-                .build();
-            accessLogRepository.save(registrationLog);
-            
+            performAuditSaveUser(AccessLog.builder()
+                    .user(savedUser)
+                    .action("USER_REGISTRATION")
+                    .ipAddress(request.getIpAddress())
+                    .userAgent(request.getDeviceInfo())
+                    .success(true)
+                    .details("{\"message\": \"User registered successfully\"}")
+                    .build());
+
             log.info("User registered successfully with ID: {}", savedUser.getId());
             
             return RegisterResponse.success(
@@ -349,5 +346,10 @@ public class AuthenticationService {
             }
             throw e;
         }
+    }
+
+    private void performAuditSaveUser(AccessLog savedUser) {
+        AccessLog registrationLog = savedUser;
+        accessLogRepository.save(registrationLog);
     }
 }

@@ -5,6 +5,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -38,6 +40,7 @@ public class AccessLog {
     private Boolean success = true;
     
     @Column(name = "details", columnDefinition = "JSONB")
+    @JdbcTypeCode(SqlTypes.JSON)
     private String details; // JSON string for flexibility
     
     @Column(name = "timestamp", nullable = false)
@@ -69,13 +72,15 @@ public class AccessLog {
                 .build();
     }
     
-    public static AccessLog logout(User user, String ipAddress, String userAgent) {
+    public static AccessLog buildAuditObject(String action, User user, String ipAddress, String userAgent) {
         return AccessLog.builder()
                 .user(user)
-                .action("LOGOUT")
+                .action(action)
                 .ipAddress(ipAddress)
                 .userAgent(userAgent)
                 .success(true)
                 .build();
     }
+
+
 }

@@ -47,6 +47,6 @@ VALUES (
     'system',
     'Database Migration V3',
     TRUE,
-    'Created default roles: USER, ADMIN, DOCTOR, NURSE, PATIENT',
+    '{"migration": "V3", "type": "Created default roles:USER, ADMIN, DOCTOR, NURSE, PATIENT"}',
     CURRENT_TIMESTAMP
 );

@@ -59,7 +59,7 @@ DO $$
 BEGIN
     -- Add password_hash column if it doesn't exist
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'password_hash') THEN
-        ALTER TABLE users ADD COLUMN password_hash VARCHAR(255);
+        ALTER TABLE users ADD COLUMN password_hash VARCHAR(255) NOT NULL;
     END IF;
     
     -- Add last_login column if it doesn't exist
