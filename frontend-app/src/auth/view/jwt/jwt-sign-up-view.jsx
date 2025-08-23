@@ -9,7 +9,6 @@ import Link from '@mui/material/Link';
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
 import InputAdornment from '@mui/material/InputAdornment';
 
 import { paths } from 'src/routes/paths';
@@ -20,11 +19,10 @@ import { Iconify } from 'src/components/iconify';
 import { Form, Field, schemaUtils } from 'src/components/hook-form';
 
 import { signUp } from '../../context/jwt';
-// import { useAuthContext } from '../../hooks'; // Not needed for registration
+import { useAuthContext } from '../../hooks';
 import { getErrorMessage } from '../../utils';
 import { FormHead } from '../../components/form-head';
 import { SignUpTerms } from '../../components/sign-up-terms';
-import { checkEnvironment, testProxyConnection } from '../../../utils/proxyTest';
 
 // ----------------------------------------------------------------------
 
@@ -52,7 +50,7 @@ export function JwtSignUpView() {
 
   const showPassword = useBoolean();
 
-  // const { checkUserSession } = useAuthContext(); // Not needed for registration
+  const { checkUserSession } = useAuthContext();
 
   const [errorMessage, setErrorMessage] = useState(null);
 
@@ -178,33 +176,6 @@ export function JwtSignUpView() {
       >
         Create account
       </Button>
-
-      {/* Botones de prueba para debugging */}
-      {import.meta.env.DEV && (
-        <Box sx={{ mt: 2, display: 'flex', gap: 2, flexDirection: 'column' }}>
-          <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center' }}>
-            Debug Tools (Development Only)
-          </Typography>
-          <Box sx={{ display: 'flex', gap: 1 }}>
-            <Button
-              size="small"
-              variant="outlined"
-              onClick={() => checkEnvironment()}
-              sx={{ flex: 1 }}
-            >
-              Check Environment
-            </Button>
-            <Button
-              size="small"
-              variant="outlined"
-              onClick={() => testProxyConnection()}
-              sx={{ flex: 1 }}
-            >
-              Test Proxy
-            </Button>
-          </Box>
-        </Box>
-      )}
     </Box>
   );
 

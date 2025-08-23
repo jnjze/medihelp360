@@ -8,71 +8,25 @@ const axiosInstance = axios.create({
   baseURL: CONFIG.serverUrl,
   headers: {
     'Content-Type': 'application/json',
-    'Accept': 'application/json',
   },
-  // Configuración para CORS
-  withCredentials: false,
-  timeout: 10000,
 });
 
-// Interceptor de request para debugging y manejo de CORS
-axiosInstance.interceptors.request.use((config) => {
-  // Log para debugging de CORS
-  const fullURL = config.baseURL ? `${config.baseURL}${config.url}` : config.url;
-  console.log('🚀 API Request:', {
-    method: config.method?.toUpperCase(),
-    url: config.url,
-    baseURL: config.baseURL || 'relative (proxy)',
-    fullURL,
-    headers: config.headers,
-    isProxy: !config.baseURL,
-  });
-
-  // Agregar token si existe
-  const token = localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken');
+/**
+ * Optional: Add token (if using auth)
+ *
+ axiosInstance.interceptors.request.use((config) => {
+  const token = localStorage.getItem('accessToken');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
-
-  // Agregar headers adicionales para CORS
-  config.headers['X-Requested-With'] = 'XMLHttpRequest';
-  
   return config;
-}, (error) => {
-  console.error('❌ Request interceptor error:', error);
-  return Promise.reject(error);
 });
+*
+*/
 
 axiosInstance.interceptors.response.use(
-  (response) => {
-    // Log de respuesta exitosa
-    console.log('✅ API Response:', {
-      status: response.status,
-      url: response.config.url,
-      data: response.data,
-    });
-    return response;
-  },
+  (response) => response,
   (error) => {
-    // Log detallado de errores para debugging
-    console.error('❌ API Error:', {
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      url: error.config?.url,
-      method: error.config?.method,
-      data: error.response?.data,
-      headers: error.response?.headers,
-      corsError: error.message?.includes('CORS') || error.message?.includes('blocked'),
-    });
-
-    // Manejar errores de CORS específicamente
-    if (error.message?.includes('CORS') || error.message?.includes('blocked')) {
-      const corsError = new Error('CORS Error: Request blocked by browser. Check proxy configuration.');
-      corsError.isCorsError = true;
-      corsError.originalError = error;
-      return Promise.reject(corsError);
-    }
-
     // Manejar errores estructurados del backend
     if (error?.response?.data) {
       const errorData = error.response.data;
