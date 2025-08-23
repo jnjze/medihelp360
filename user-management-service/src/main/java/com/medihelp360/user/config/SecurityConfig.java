@@ -61,14 +61,28 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(Arrays.asList("*"));
+        
+        // Configuración específica para desarrollo
+        configuration.setAllowedOrigins(Arrays.asList(
+            "http://localhost:4040",  // Frontend Vite
+            "http://localhost:3000",  // Frontend CRA (backup)
+            "http://127.0.0.1:4040", // Frontend Vite (alternativo)
+            "http://127.0.0.1:3000"  // Frontend CRA (alternativo)
+        ));
+        
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("*"));
+        configuration.setAllowedHeaders(Arrays.asList(
+            "Origin", "Content-Type", "Accept", "Authorization", 
+            "X-Requested-With", "Cache-Control", "Pragma"
+        ));
+        configuration.setExposedHeaders(Arrays.asList("Authorization", "X-Total-Count"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
         
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
+        
+        log.info("CORS configuration: Allowing origins: {}", configuration.getAllowedOrigins());
         return source;
     }
 } 
