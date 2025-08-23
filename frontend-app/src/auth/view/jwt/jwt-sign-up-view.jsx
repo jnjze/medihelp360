@@ -23,6 +23,7 @@ import { useAuthContext } from '../../hooks';
 import { getErrorMessage } from '../../utils';
 import { FormHead } from '../../components/form-head';
 import { SignUpTerms } from '../../components/sign-up-terms';
+import { testProxyConnection, checkEnvironment } from '../../../utils/proxyTest';
 
 // ----------------------------------------------------------------------
 
@@ -176,6 +177,33 @@ export function JwtSignUpView() {
       >
         Create account
       </Button>
+
+      {/* Botones de prueba para debugging */}
+      {import.meta.env.DEV && (
+        <Box sx={{ mt: 2, display: 'flex', gap: 2, flexDirection: 'column' }}>
+          <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center' }}>
+            Debug Tools (Development Only)
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button
+              size="small"
+              variant="outlined"
+              onClick={() => checkEnvironment()}
+              sx={{ flex: 1 }}
+            >
+              Check Environment
+            </Button>
+            <Button
+              size="small"
+              variant="outlined"
+              onClick={() => testProxyConnection()}
+              sx={{ flex: 1 }}
+            >
+              Test Proxy
+            </Button>
+          </Box>
+        </Box>
+      )}
     </Box>
   );
 

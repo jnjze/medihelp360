@@ -30,6 +30,25 @@ export default defineConfig({
       },
     ],
   },
-  server: { port: PORT, host: true },
+  server: { 
+    port: PORT, 
+    host: true,
+    proxy: {
+      // Proxy para todas las llamadas API - evita CORS completamente
+      '^/(auth|users|roles|actuator|health)': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        secure: false,
+        configure: (proxy, options) => {
+          proxy.on('error', (err, req, res) => {
+            console.log('❌ Proxy error:', err);
+          });
+          proxy.on('proxyReq', (proxyReq, req, res) => {
+            console.log('🚀 Proxying:', req.method, req.url, '→', options.target + req.url);
+          });
+        },
+      },
+    },
+  },
   preview: { port: PORT, host: true },
 });

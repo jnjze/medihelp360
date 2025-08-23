@@ -7,7 +7,9 @@ import packageJson from '../package.json';
 export const CONFIG = {
   appName: 'MediHelp360',
   appVersion: packageJson.version,
-  serverUrl: import.meta.env.VITE_SERVER_URL ?? 'http://localhost:8081',
+  // En desarrollo, usar URLs relativas para aprovechar el proxy de Vite
+  // En producción, usar la URL completa del servidor
+  serverUrl: import.meta.env.VITE_SERVER_URL ?? (import.meta.env.DEV ? '' : 'http://localhost:8080'),
   assetsDir: import.meta.env.VITE_ASSETS_DIR ?? '',
   /**
    * Auth
