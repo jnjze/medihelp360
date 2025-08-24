@@ -77,7 +77,29 @@ public class CorsFilter implements GlobalFilter {
             return response.setComplete();
         }
 
-        return chain.filter(exchange);
+        // Usar exchange.getResponse().beforeCommit() para interceptar DESPUÉS de que se procese
+        return chain.filter(exchange).then(Mono.fromRunnable(() -> {
+            ServerHttpResponse finalResponse = exchange.getResponse();
+            
+            log.debug("CORS Filter: Final response processing - cleaning duplicate headers");
+            
+            // LIMPIEZA FINAL: Remover headers duplicados DESPUÉS de que se procese
+            finalResponse.getHeaders().remove("Access-Control-Allow-Origin");
+            finalResponse.getHeaders().remove("Access-Control-Allow-Methods");
+            finalResponse.getHeaders().remove("Access-Control-Allow-Headers");
+            finalResponse.getHeaders().remove("Access-Control-Allow-Credentials");
+            finalResponse.getHeaders().remove("Access-Control-Expose-Headers");
+            finalResponse.getHeaders().remove("Access-Control-Max-Age");
+            finalResponse.getHeaders().remove("Vary");
+            finalResponse.getHeaders().remove("Access-Control-Request-Method");
+            finalResponse.getHeaders().remove("Access-Control-Request-Headers");
+            
+            // Agregar headers CORS correctos DESPUÉS de la limpieza
+            if (isAllowedOrigin(origin)) {
+                addCorsHeaders(finalResponse, origin);
+                log.debug("CORS Filter: Final headers added for origin: {}", origin);
+            }
+        }));
     }
 
     private Mono<Void> handlePreflightRequest(ServerWebExchange exchange) {
