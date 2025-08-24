@@ -4,6 +4,7 @@ import com.medihelp360.user.dto.LoginRequest;
 import com.medihelp360.user.dto.LoginResponse;
 import com.medihelp360.user.dto.RegisterRequest;
 import com.medihelp360.user.dto.RegisterResponse;
+import com.medihelp360.user.dto.UserResponse;
 import com.medihelp360.user.dto.ErrorResponse;
 import com.medihelp360.user.exception.AuthenticationException;
 import com.medihelp360.user.exception.RegistrationException;
@@ -173,6 +174,49 @@ public class AuthenticationController {
             
             ErrorResponse errorResponse = ErrorResponse.internalError(
                 "An unexpected error occurred during logout. Please try again later.", 
+                httpRequest.getRequestURI()
+            );
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+    
+    @GetMapping("/me")
+    public ResponseEntity<?> getCurrentUser(HttpServletRequest httpRequest) {
+        log.info("Get current user request received");
+        
+        try {
+            // Extract JWT token from Authorization header
+            String authHeader = httpRequest.getHeader("Authorization");
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                log.warn("Missing or invalid Authorization header");
+                ErrorResponse errorResponse = ErrorResponse.unauthorized(
+                    "Missing or invalid Authorization header", 
+                    httpRequest.getRequestURI()
+                );
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+            }
+            
+            String token = authHeader.substring(7); // Remove "Bearer " prefix
+            
+            UserResponse userResponse = authenticationService.getCurrentUser(token);
+            log.info("Current user retrieved successfully");
+            return ResponseEntity.ok(userResponse);
+            
+        } catch (AuthenticationException e) {
+            log.warn("Failed to get current user - {} (Code: {})", 
+                    e.getMessage(), e.getErrorCode());
+            
+            ErrorResponse errorResponse = ErrorResponse.authenticationError(
+                e.getMessage(), 
+                httpRequest.getRequestURI()
+            );
+            return ResponseEntity.status(e.getHttpStatus()).body(errorResponse);
+            
+        } catch (Exception e) {
+            log.error("Unexpected error while getting current user - {}", e.getMessage(), e);
+            
+            ErrorResponse errorResponse = ErrorResponse.internalError(
+                "An unexpected error occurred while retrieving user information. Please try again later.", 
                 httpRequest.getRequestURI()
             );
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);

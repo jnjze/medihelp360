@@ -110,4 +110,16 @@ public class ErrorResponse {
             .suggestion("Please try again later or contact support if the problem persists")
             .build();
     }
+    
+    public static ErrorResponse unauthorized(String message, String path) {
+        return ErrorResponse.builder()
+            .timestamp(LocalDateTime.now())
+            .status(401)
+            .error("Unauthorized")
+            .message(message)
+            .path(path)
+            .errorCode("AUTH_002")
+            .suggestion("Please provide valid authentication credentials")
+            .build();
+    }
 }

@@ -5,6 +5,7 @@ import com.medihelp360.user.dto.LoginRequest;
 import com.medihelp360.user.dto.LoginResponse;
 import com.medihelp360.user.dto.RegisterRequest;
 import com.medihelp360.user.dto.RegisterResponse;
+import com.medihelp360.user.dto.UserResponse;
 import com.medihelp360.user.repository.AccessLogRepository;
 import com.medihelp360.user.repository.FailedLoginAttemptRepository;
 import com.medihelp360.user.repository.UserRepository;
@@ -146,19 +147,66 @@ public class AuthenticationService {
     @Transactional
     public void logout(String token, String ipAddress, String userAgent) {
         String tokenHash = hashToken(token);
-        Optional<UserSession> sessionOpt = userSessionRepository.findByTokenHash(tokenHash);
+        Optional<UserSession> userSessionOpt = userSessionRepository.findByTokenHash(tokenHash);
         
-        if (sessionOpt.isPresent()) {
-            UserSession session = sessionOpt.get();
-            User user = session.getUser();
+        if (userSessionOpt.isPresent()) {
+            UserSession userSession = userSessionOpt.get();
+            User user = userSession.getUser();
             
             // Log logout
             performAuditSaveUser(AccessLog.buildAuditObject("LOGOUT", user, ipAddress, userAgent));
 
             // Remove session
-            userSessionRepository.delete(session);
+            userSessionRepository.delete(userSession);
             
             log.info("User logged out: {}", user.getEmail());
+        }
+    }
+    
+    @Transactional(readOnly = true)
+    public UserResponse getCurrentUser(String token) {
+        try {
+            // Validate and parse JWT token
+            Claims claims = Jwts.parser()
+                    .verifyWith(getSigningKey())
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+            
+            String userId = claims.getSubject();
+            
+            // Find user
+            Optional<User> userOpt = userRepository.findById(UUID.fromString(userId));
+            if (userOpt.isEmpty()) {
+                log.warn("Get current user failed: User not found for ID: {}", userId);
+                throw new RuntimeException("User not found");
+            }
+            
+            User user = userOpt.get();
+            
+            // Check if user is active
+            if (user.getStatus() != UserStatus.ACTIVE) {
+                log.warn("Get current user failed: Inactive user: {}", user.getEmail());
+                throw new RuntimeException("User account is not active");
+            }
+            
+            // Map to UserResponse
+            UserResponse userResponse = UserResponse.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .name(user.getName())
+                .status(user.getStatus())
+                .roles(user.getRoles())
+                .createdAt(user.getCreatedAt())
+                .updatedAt(user.getUpdatedAt())
+                .build();
+            
+            log.info("Current user retrieved successfully: {}", user.getEmail());
+            return userResponse;
+            
+        } catch (Exception e) {
+            log.error("Error getting current user: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to retrieve user information", e);
         }
     }
     
