@@ -32,10 +32,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         
+        log.info("JWT Filter: Processing request to: {}", request.getRequestURI());
+        
         try {
             String jwt = getJwtFromRequest(request);
             
             if (StringUtils.hasText(jwt)) {
+                log.info("JWT Filter: JWT token found, validating...");
                 Claims claims = validateAndParseToken(jwt);
                 
                 if (claims != null) {
@@ -53,13 +56,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         new UsernamePasswordAuthenticationToken(userId, null, authorities);
                     
                     SecurityContextHolder.getContext().setAuthentication(authentication);
-                    log.debug("JWT authentication successful for user: {} (ID: {})", email, userId);
+                    log.info("JWT Filter: Authentication successful for user: {} (ID: {}) with roles: {}", email, userId, roles);
+                } else {
+                    log.warn("JWT Filter: JWT token validation failed");
                 }
+            } else {
+                log.info("JWT Filter: No JWT token found in request");
             }
         } catch (Exception e) {
-            log.warn("JWT authentication failed: {}", e.getMessage());
+            log.error("JWT Filter: Error during authentication: {}", e.getMessage(), e);
         }
         
+        log.info("JWT Filter: Continuing with filter chain");
         filterChain.doFilter(request, response);
     }
     
