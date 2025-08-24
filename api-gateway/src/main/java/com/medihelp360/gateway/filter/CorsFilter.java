@@ -20,7 +20,7 @@ import java.util.List;
  */
 @Slf4j
 @Component
-@Order(0) // Ejecutar antes que GatewayHeaderFilter (Order 1)
+@Order(1) // Ejecutar DESPUÉS de PreCorsFilter (Order -1000) pero ANTES que otros filtros
 public class CorsFilter implements GlobalFilter {
 
     private static final List<String> ALLOWED_ORIGINS = Arrays.asList(
@@ -49,13 +49,18 @@ public class CorsFilter implements GlobalFilter {
         
         log.debug("CORS Filter: Processing request from origin: {} with method: {}", origin, method);
 
-        // Limpiar cualquier header CORS existente para evitar duplicados
+        // LIMPIEZA AGRESIVA: Remover TODOS los headers CORS existentes
         response.getHeaders().remove("Access-Control-Allow-Origin");
         response.getHeaders().remove("Access-Control-Allow-Methods");
         response.getHeaders().remove("Access-Control-Allow-Headers");
         response.getHeaders().remove("Access-Control-Allow-Credentials");
         response.getHeaders().remove("Access-Control-Expose-Headers");
         response.getHeaders().remove("Access-Control-Max-Age");
+        response.getHeaders().remove("Vary");
+        
+        // También limpiar headers que Spring Cloud Gateway puede agregar
+        response.getHeaders().remove("Access-Control-Request-Method");
+        response.getHeaders().remove("Access-Control-Request-Headers");
 
         // Manejar preflight OPTIONS request
         if ("OPTIONS".equals(method)) {

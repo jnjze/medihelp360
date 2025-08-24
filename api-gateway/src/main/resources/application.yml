@@ -30,15 +30,15 @@ spring:
           - version-1.0
     
     gateway:
-      # Deshabilitar CORS por defecto para usar nuestro filtro personalizado
-      globalcors:
-        cors-configurations:
-          '[/**]':
-            allowedOrigins: []
-            allowedMethods: []
-            allowedHeaders: []
-            allowCredentials: false
-            maxAge: 0
+      # CORS COMPLETAMENTE DESHABILITADO - Comentado para evitar cualquier configuración automática
+      # globalcors:
+      #   cors-configurations:
+      #     '[/**]':
+      #       allowedOrigins: []
+      #       allowedMethods: []
+      #       allowedHeaders: []
+      #       allowCredentials: false
+      #       maxAge: 0
       
       discovery:
         locator:
