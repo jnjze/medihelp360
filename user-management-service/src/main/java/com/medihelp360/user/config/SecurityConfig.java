@@ -42,6 +42,7 @@ public class SecurityConfig {
                 .requestMatchers("/auth/validate").permitAll()
                 .requestMatchers("/auth/refresh").permitAll()
                 // Protected endpoints (más específicos)
+                .requestMatchers("/auth/me").authenticated()
                 .requestMatchers("/auth/logout").authenticated()
                 .requestMatchers("/users/**").authenticated()
                 .requestMatchers("/roles/**").authenticated()
