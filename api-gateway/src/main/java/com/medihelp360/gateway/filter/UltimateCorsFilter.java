@@ -11,28 +11,28 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 /**
- * Filtro FINAL de CORS que se ejecuta DESPUÉS de todo el procesamiento
- * Su propósito es interceptar la respuesta final y limpiar headers CORS duplicados
+ * Filtro ULTIMATE de CORS que se ejecuta en el momento más bajo posible
+ * Usa beforeCommit() para interceptar la respuesta justo antes de enviarla
  */
 @Slf4j
 @Component
 @Order(Integer.MAX_VALUE) // Ejecutar DESPUÉS de todos los demás filtros
-public class FinalCorsFilter implements GlobalFilter {
+public class UltimateCorsFilter implements GlobalFilter {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         ServerHttpRequest request = exchange.getRequest();
         String origin = request.getHeaders().getFirst("Origin");
         
-        log.debug("FinalCorsFilter: Intercepting final response for origin: {}", origin);
+        log.debug("UltimateCorsFilter: Intercepting request for origin: {}", origin);
         
-        // Continuar con la cadena de filtros
-        return chain.filter(exchange).then(Mono.fromRunnable(() -> {
+        // Usar beforeCommit() para interceptar JUSTO antes de enviar la respuesta
+        exchange.getResponse().beforeCommit(() -> {
             ServerHttpResponse response = exchange.getResponse();
             
-            log.debug("FinalCorsFilter: Processing final response - cleaning ALL CORS headers");
+            log.debug("UltimateCorsFilter: beforeCommit() - cleaning ALL CORS headers");
             
-            // LIMPIEZA FINAL COMPLETA: Remover TODOS los headers CORS
+            // LIMPIEZA ULTIMATE: Remover TODOS los headers CORS
             response.getHeaders().remove("Access-Control-Allow-Origin");
             response.getHeaders().remove("Access-Control-Allow-Methods");
             response.getHeaders().remove("Access-Control-Allow-Headers");
@@ -43,14 +43,18 @@ public class FinalCorsFilter implements GlobalFilter {
             response.getHeaders().remove("Access-Control-Request-Method");
             response.getHeaders().remove("Access-Control-Request-Headers");
             
-            // Agregar headers CORS correctos DESPUÉS de la limpieza completa
+            // Agregar headers CORS correctos DESPUÉS de la limpieza ultimate
             if (isAllowedOrigin(origin)) {
                 addCorsHeaders(response, origin);
-                log.debug("FinalCorsFilter: Final CORS headers added for origin: {}", origin);
+                log.debug("UltimateCorsFilter: Final CORS headers added for origin: {}", origin);
             } else {
-                log.warn("FinalCorsFilter: Blocked request from unauthorized origin: {}", origin);
+                log.warn("UltimateCorsFilter: Blocked request from unauthorized origin: {}", origin);
             }
-        }));
+            
+            return Mono.empty();
+        });
+        
+        return chain.filter(exchange);
     }
     
     private boolean isAllowedOrigin(String origin) {
