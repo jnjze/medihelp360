@@ -60,14 +60,14 @@ spring:
 
         # User Management Service
         - id: user-management
-          uri: lb://user-management-service
+          uri: http://localhost:8081
           predicates:
             - Path=/auth/**,/users/**,/roles/**
-          filters:
-            - name: CircuitBreaker
-              args:
-                name: user-management-cb
-                fallbackUri: forward:/fallback/user-management
+          # filters:
+          #   - name: CircuitBreaker
+          #     args:
+          #       name: user-management-cb
+          #       fallbackUri: forward:/fallback/user-management
         
         # Database Sync Service A (PostgreSQL)
         - id: sync-service-a
