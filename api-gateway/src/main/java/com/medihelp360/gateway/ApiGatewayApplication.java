@@ -2,9 +2,9 @@ package com.medihelp360.gateway;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.gateway.route.RouteLocator;
-import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
-import org.springframework.context.annotation.Bean;
+// import org.springframework.cloud.gateway.route.RouteLocator;
+// import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
+// import org.springframework.context.annotation.Bean;
 
 /**
  * Aplicación principal del API Gateway para MediHelp360
@@ -19,7 +19,9 @@ public class ApiGatewayApplication {
 
     /**
      * Configuración de rutas del API Gateway
+     * COMENTADO: Usar configuración en application.yml en su lugar
      */
+    /*
     @Bean
     public RouteLocator customRouteLocator(RouteLocatorBuilder builder) {
         return builder.routes()
@@ -54,4 +56,5 @@ public class ApiGatewayApplication {
                 
                 .build();
     }
+    */
 } 
