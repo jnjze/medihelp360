@@ -3,23 +3,23 @@ import { Iconify } from 'src/components/iconify';
 // ----------------------------------------------------------------------
 
 export const _account = [
-  { label: 'Home', href: '/', icon: <Iconify icon="solar:home-angle-bold-duotone" /> },
+  { label: 'Inicio', href: '/', icon: <Iconify icon="solar:home-angle-bold-duotone" /> },
   {
-    label: 'Profile',
+    label: 'Perfil',
     href: '#',
     icon: <Iconify icon="custom:profile-duotone" />,
   },
   {
-    label: 'Projects',
+    label: 'Proyectos',
     href: '#',
     icon: <Iconify icon="solar:notes-bold-duotone" />,
     info: '3',
   },
   {
-    label: 'Subscription',
+    label: 'Suscripción',
     href: '#',
     icon: <Iconify icon="custom:invoice-duotone" />,
   },
-  { label: 'Security', href: '#', icon: <Iconify icon="solar:shield-keyhole-bold-duotone" /> },
-  { label: 'Account settings', href: '#', icon: <Iconify icon="solar:settings-bold-duotone" /> },
+  { label: 'Seguridad', href: '#', icon: <Iconify icon="solar:shield-keyhole-bold-duotone" /> },
+  { label: 'Configuración de cuenta', href: '#', icon: <Iconify icon="solar:settings-bold-duotone" /> },
 ];

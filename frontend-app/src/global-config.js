@@ -7,8 +7,8 @@ import packageJson from '../package.json';
 export const CONFIG = {
   appName: 'MediHelp360',
   appVersion: packageJson.version,
-  // Usar backend directamente para evitar problemas de CORS en el gateway
-  serverUrl: import.meta.env.VITE_SERVER_URL ?? 'http://localhost:8081',
+  // Usar API Gateway como punto de entrada principal
+  serverUrl: import.meta.env.VITE_SERVER_URL ?? 'http://localhost:8080',
   assetsDir: import.meta.env.VITE_ASSETS_DIR ?? '',
   /**
    * Auth

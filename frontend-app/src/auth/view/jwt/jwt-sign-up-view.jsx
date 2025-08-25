@@ -115,22 +115,22 @@ export function JwtSignUpView() {
     <Box sx={{ gap: 3, display: 'flex', flexDirection: 'column' }}>
       <Field.Text
         name="name"
-        label="Full Name"
-        placeholder="Enter your full name"
+        label="Nombre completo"
+        placeholder="Ingresa tu nombre completo"
         slotProps={{ inputLabel: { shrink: true } }}
       />
 
       <Field.Text 
         name="email" 
-        label="Email address" 
-        placeholder="Enter your email"
+        label="Correo electrónico" 
+        placeholder="Ingresa tu correo electrónico"
         slotProps={{ inputLabel: { shrink: true } }} 
       />
 
       <Field.Text
         name="password"
-        label="Password"
-        placeholder="8+ characters with uppercase, lowercase, digit & special char"
+        label="Contraseña"
+        placeholder="8+ caracteres con mayúsculas, minúsculas, dígitos y caracteres especiales"
         type={showPassword.value ? 'text' : 'password'}
         slotProps={{
           inputLabel: { shrink: true },
@@ -148,8 +148,8 @@ export function JwtSignUpView() {
 
       <Field.Text
         name="confirmPassword"
-        label="Confirm Password"
-        placeholder="Confirm your password"
+        label="Confirmar contraseña"
+        placeholder="Confirma tu contraseña"
         type={showPassword.value ? 'text' : 'password'}
         slotProps={{
           inputLabel: { shrink: true },
@@ -172,9 +172,9 @@ export function JwtSignUpView() {
         type="submit"
         variant="contained"
         loading={isSubmitting}
-        loadingIndicator="Create account..."
+        loadingIndicator="Creando cuenta..."
       >
-        Create account
+        Crear cuenta
       </Button>
     </Box>
   );
@@ -182,12 +182,12 @@ export function JwtSignUpView() {
   return (
     <>
       <FormHead
-        title="Join MediHelp360"
+        title="Únete a MediHelp360"
         description={
           <>
-            {`Already have an account? `}
+            {`¿Ya tienes una cuenta? `}
             <Link component={RouterLink} href={paths.auth.jwt.signIn} variant="subtitle2">
-              Sign in here
+              Inicia sesión aquí
             </Link>
           </>
         }

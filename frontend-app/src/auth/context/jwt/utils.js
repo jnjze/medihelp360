@@ -53,11 +53,11 @@ export function isValidToken(accessToken) {
 
 export function tokenExpired(exp) {
   const currentTime = Date.now();
-  const timeLeft = exp * 1000 - currentTime;
+  const timeLeft = exp * 3600 - currentTime;
 
   setTimeout(() => {
     try {
-      alert('Token expired!');
+      
       sessionStorage.removeItem(JWT_STORAGE_KEY);
       window.location.href = paths.auth.jwt.signIn;
     } catch (error) {

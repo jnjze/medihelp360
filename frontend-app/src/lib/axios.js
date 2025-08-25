@@ -52,6 +52,7 @@ export const endpoints = {
     logout: '/auth/logout',
     validate: '/auth/validate',
     refresh: '/auth/refresh',
+    me: '/auth/me',
   },
   users: {
     list: '/users',

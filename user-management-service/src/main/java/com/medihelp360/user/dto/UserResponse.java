@@ -20,6 +20,7 @@ public class UserResponse {
     private UUID id;
     private String email;
     private String name;
+    private String displayName;
     private UserStatus status;
     private Set<Role> roles;
     private LocalDateTime createdAt;
