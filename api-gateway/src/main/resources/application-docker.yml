@@ -24,11 +24,11 @@ spring:
     
     gateway:
       routes:
-        # User Management Service
+        # User Management Service - INCLUYE AUTENTICACIÓN
         - id: user-management-service
           uri: lb://user-management-service
           predicates:
-            - Path=/api/users/**
+            - Path=/auth/**,/users/**,/roles/**
           filters:
             - name: CircuitBreaker
               args:
@@ -39,8 +39,9 @@ spring:
         - id: database-sync-service-a
           uri: lb://database-sync-service-a
           predicates:
-            - Path=/api/sync/a/**
+            - Path=/api/sync-a/**
           filters:
+            - StripPrefix=2
             - name: CircuitBreaker
               args:
                 name: sync-service-a-cb
@@ -50,8 +51,9 @@ spring:
         - id: database-sync-service-b
           uri: lb://database-sync-service-b
           predicates:
-            - Path=/api/sync/b/**
+            - Path=/api/sync-b/**
           filters:
+            - StripPrefix=2
             - name: CircuitBreaker
               args:
                 name: sync-service-b-cb
@@ -61,8 +63,9 @@ spring:
         - id: database-sync-service-c
           uri: lb://database-sync-service-c
           predicates:
-            - Path=/api/sync/c/**
+            - Path=/api/sync-c/**
           filters:
+            - StripPrefix=2
             - name: CircuitBreaker
               args:
                 name: sync-service-c-cb
@@ -72,9 +75,18 @@ spring:
         - id: user-management-health
           uri: lb://user-management-service
           predicates:
-            - Path=/api/actuator/health/user-management
+            - Path=/health/user-management/**
           filters:
-            - RewritePath=/api/actuator/health/user-management, /api/actuator/health
+            - StripPrefix=2
+        
+        # User Management Actuator endpoints
+        - id: user-management-actuator
+          uri: lb://user-management-service
+          predicates:
+            - Path=/actuator/**
+          filters:
+            - StripPrefix=0
+            - RewritePath=/health/user-management/(?<segment>.*), /actuator/$\{segment}
 
 server:
   port: ${SERVER_PORT:8080}
