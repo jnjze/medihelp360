@@ -15,20 +15,27 @@ public class CorsConfig implements WebFluxConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        // DESHABILITAR CORS COMPLETAMENTE a nivel de WebFlux
-        // No agregar ningún mapping de CORS
-        // registry.addMapping("/**") - COMENTADO
+        // HABILITAR CORS para el frontend
+        registry.addMapping("/**")
+                .allowedOriginPatterns("http://localhost:4040", "http://localhost:3000", "http://localhost:4200")
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
+                .allowedHeaders("*")
+                .allowCredentials(true)
+                .maxAge(3600);
     }
 
-    // NO crear CorsWebFilter para evitar cualquier manejo automático de CORS
-    // @Bean
-    // public CorsWebFilter corsWebFilter() {
-    //     return null;
-    // }
-    
-    // DESHABILITAR CORS a nivel de configuración de WebFlux
-    @Override
-    public void configureHttpMessageCodecs(org.springframework.http.codec.ServerCodecConfigurer configurer) {
-        // Configuración para deshabilitar CORS automático
+    @Bean
+    public CorsWebFilter corsWebFilter() {
+        CorsConfiguration corsConfig = new CorsConfiguration();
+        corsConfig.setAllowedOriginPatterns(Arrays.asList("http://localhost:4040", "http://localhost:3000", "http://localhost:4200"));
+        corsConfig.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+        corsConfig.setAllowedHeaders(Arrays.asList("*"));
+        corsConfig.setAllowCredentials(true);
+        corsConfig.setMaxAge(3600L);
+        
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", corsConfig);
+        
+        return new CorsWebFilter(source);
     }
 }
